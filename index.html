@@ -134,6 +134,11 @@
       box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
     }
 
+    /* Style for calendar picker */
+    input[type="date"] {
+      cursor: pointer;
+    }
+
     .category-accordion {
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -510,10 +515,10 @@
             <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
           </div>
           
-          <!-- Pickup Date DD/MM/YYYY -->
+          <!-- Calendar Pickup Date Input -->
           <div class="form-group">
-            <label for="pickupDate">Pickup Date (DD/MM/YYYY) *</label>
-            <input type="text" id="pickupDate" required placeholder="DD/MM/YYYY" maxlength="10">
+            <label for="pickupDate">Pickup Date *</label>
+            <input type="date" id="pickupDate" required>
           </div>
 
           <div class="form-group">
@@ -676,36 +681,41 @@
       { id: "item_45", name: "Thermal Bag & Ice Gel", cat: "addons", prices: [{ label: "1 Set", price: 50 }] }
     ];
 
-    const ALL_TIME_SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+    function generate15MinTimeSlots() {
+      const slots = [];
+      for (let hour = 10; hour <= 24; hour++) {
+        const hStr = String(hour).padStart(2, '0');
+        slots.push(`${hStr}:00`);
+        if (hour < 24) {
+          slots.push(`${hStr}:15`);
+          slots.push(`${hStr}:30`);
+          slots.push(`${hStr}:45`);
+        }
+      }
+      return slots;
+    }
+
+    const ALL_15MIN_SLOTS = generate15MinTimeSlots();
 
     let catalog = JSON.parse(localStorage.getItem('cake_catalog')) || DEFAULT_CATALOG;
-    let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_TIME_SLOTS };
+    let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
     let submissions = JSON.parse(localStorage.getItem('cake_submissions')) || [];
     
-    // Keyed by item_id + size_index
     let cart = {};
 
     function initForm() {
-      // Pickup Date DD/MM/YYYY Format
+      // Set Calendar Minimum Date based on admin leadDays
       const dateInput = document.getElementById('pickupDate');
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + pickupSettings.leadDays);
-      const dd = String(tomorrow.getDate()).padStart(2, '0');
-      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-      const yyyy = tomorrow.getFullYear();
-      dateInput.value = `${dd}/${mm}/${yyyy}`;
-
-      dateInput.oninput = function(e) {
-        let v = e.target.value.replace(/\D/g, '');
-        if (v.length > 8) v = v.substring(0, 8);
-        if (v.length >= 5) {
-          e.target.value = `${v.substring(0,2)}/${v.substring(2,4)}/${v.substring(4)}`;
-        } else if (v.length >= 3) {
-          e.target.value = `${v.substring(0,2)}/${v.substring(2)}`;
-        } else {
-          e.target.value = v;
-        }
-      };
+      const minDate = new Date();
+      minDate.setDate(minDate.getDate() + pickupSettings.leadDays);
+      
+      const yyyy = minDate.getFullYear();
+      const mm = String(minDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(minDate.getDate()).padStart(2, '0');
+      
+      const minDateStr = `${yyyy}-${mm}-${dd}`;
+      dateInput.min = minDateStr;
+      dateInput.value = minDateStr;
 
       // Pickup Time Slots
       const timeSelect = document.getElementById('pickupTime');
@@ -757,7 +767,6 @@
       document.getElementById(id).classList.toggle('collapsed');
     }
 
-    // CART MANAGEMENT FUNCTIONS
     function addToCart(itemId) {
       const item = catalog.find(i => i.id === itemId);
       const sizeSelect = document.getElementById(`select_size_${itemId}`);
@@ -778,7 +787,6 @@
         };
       }
 
-      // Visual Feedback on Add Button (Flash Green without opening drawer)
       const btn = document.getElementById(`btn_add_${itemId}`);
       if (btn) {
         btn.classList.add('added-flash');
@@ -790,7 +798,6 @@
       }
 
       updateCartUI();
-      // NOTE: openCartDrawer() is NOT called automatically here so user can keep browsing smoothly!
     }
 
     function updateCartQty(cartKey, delta) {
@@ -817,12 +824,10 @@
         totalPrice += (item.price * item.qty);
       });
 
-      // Update Floating Bottom Bar
       document.getElementById('cart-badge-count').innerText = totalQty;
       document.getElementById('cart-float-total').innerText = `$${totalPrice}`;
       document.getElementById('drawer-total-price').innerText = `$${totalPrice}`;
 
-      // Highlight Cards on main form
       catalog.forEach(item => {
         const card = document.getElementById(`card_${item.id}`);
         const hasItem = cartItems.some(ci => ci.itemId === item.id);
@@ -832,7 +837,6 @@
         }
       });
 
-      // Render Drawer Content
       const drawerBody = document.getElementById('cart-drawer-body');
       if (cartItems.length === 0) {
         drawerBody.innerHTML = `
@@ -876,6 +880,15 @@
       document.getElementById('cart-drawer').classList.remove('active');
     }
 
+    function formatDateDisplay(yyyyMmDd) {
+      if (!yyyyMmDd) return '';
+      const parts = yyyyMmDd.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`; // Convert YYYY-MM-DD to DD/MM/YYYY for printing
+      }
+      return yyyyMmDd;
+    }
+
     function handleCustomerSubmit(e) {
       e.preventDefault();
       const items = Object.values(cart);
@@ -887,7 +900,8 @@
 
       const guestName = document.getElementById('guestName').value;
       const tel = document.getElementById('tel').value;
-      const pickupDate = document.getElementById('pickupDate').value;
+      const rawPickupDate = document.getElementById('pickupDate').value; // YYYY-MM-DD
+      const pickupDate = formatDateDisplay(rawPickupDate); // DD/MM/YYYY
       const pickupTime = document.getElementById('pickupTime').value;
       const wording = document.getElementById('wording').value || 'None';
       const remarks = document.getElementById('remarks').value || 'None';
@@ -921,7 +935,7 @@
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
             <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td>${sub.guestName}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Pickup:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td>${sub.wording}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td>${sub.remarks}</td></tr>
           </table>
@@ -958,6 +972,7 @@
       document.getElementById('confirmation-screen').style.display = 'none';
       document.getElementById('form-container').style.display = 'block';
       document.getElementById('cart-float-bar').style.display = 'flex';
+      initForm();
     }
 
     initForm();
