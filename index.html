@@ -41,12 +41,12 @@
       background-color: var(--bg-cream);
       color: var(--text-dark);
       line-height: 1.5;
-      padding-bottom: 60px;
+      padding-bottom: 100px; /* Leave space for bottom floating cart bar */
     }
 
     .container {
       max-width: 860px;
-      margin: 30px auto;
+      margin: 24px auto;
       padding: 0 16px;
     }
 
@@ -134,31 +134,6 @@
       box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
     }
 
-    .btn-submit {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 16px 40px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border-radius: 30px;
-      cursor: pointer;
-      box-shadow: var(--shadow-md);
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      width: 100%;
-      max-width: 400px;
-      justify-content: center;
-    }
-
-    .btn-submit:hover {
-      background: var(--primary-hover);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
     .category-accordion {
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
@@ -195,52 +170,292 @@
       display: none;
     }
 
+    /* Product Item Card */
     .item-card {
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
-      padding: 12px 14px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .item-card.has-qty {
+    .item-card.has-in-cart {
       border-color: var(--accent);
       background-color: #f7fcf8;
       box-shadow: 0 0 0 1px var(--accent);
     }
 
-    .item-info { margin-bottom: 10px; }
-    .item-name { font-weight: 600; font-size: 0.95rem; color: var(--text-dark); }
-    .item-price { font-size: 0.88rem; color: var(--secondary); font-weight: 600; margin-top: 2px; }
+    .item-name { font-weight: 600; font-size: 0.98rem; color: var(--text-dark); margin-bottom: 4px; }
+    .item-price { font-size: 0.9rem; color: var(--secondary); font-weight: 700; margin-bottom: 10px; }
 
-    .item-controls { display: flex; gap: 8px; align-items: center; }
-    .size-select { flex: 1; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.82rem; background: #ffffff; outline: none; }
-
-    .qty-picker {
+    .item-actions {
       display: flex;
+      gap: 8px;
       align-items: center;
+    }
+
+    .size-select-box {
+      flex: 1;
+      padding: 8px;
       border: 1px solid var(--border-color);
       border-radius: 6px;
+      font-size: 0.85rem;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .btn-add-cart {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .btn-add-cart:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Floating Bottom Cart Bar */
+    .cart-float-bar {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 860px;
+      background: var(--primary);
+      color: white;
+      padding: 14px 20px;
+      border-radius: 40px;
+      box-shadow: 0 8px 24px rgba(27, 67, 50, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      cursor: pointer;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .cart-float-bar:hover {
+      background: var(--primary-hover);
+      transform: translateX(-50%) scale(1.01);
+    }
+
+    .cart-float-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cart-icon-wrapper {
+      position: relative;
+      font-size: 1.3rem;
+    }
+
+    .cart-badge {
+      position: absolute;
+      top: -8px;
+      right: -10px;
+      background: var(--accent);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.75rem;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-total-price {
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .cart-view-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Cart Drawer Modal */
+    .cart-drawer-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .cart-drawer-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .cart-drawer {
+      position: fixed;
+      top: 0; right: -420px;
+      width: 100%; max-width: 420px;
+      height: 100%;
+      background: white;
+      z-index: 2001;
+      box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .cart-drawer.active {
+      right: 0;
+    }
+
+    .drawer-header {
+      background: var(--primary);
+      color: white;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .drawer-header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .drawer-close-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .drawer-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .drawer-footer {
+      padding: 20px;
+      border-top: 1px solid var(--border-color);
+      background: #fafafa;
+    }
+
+    /* FIXED QUANTITY PICKER IN CART DRAWER */
+    .cart-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-color);
+      gap: 12px;
+    }
+
+    .cart-item-details { flex: 1; }
+    .cart-item-title { font-weight: 600; font-size: 0.95rem; color: var(--text-dark); margin-bottom: 2px; }
+    .cart-item-option { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
+    .cart-item-price { font-weight: 700; color: var(--secondary); font-size: 0.95rem; }
+
+    /* Explicit Fix for Cart Quantity Control Box */
+    .cart-qty-picker {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--primary);
+      border-radius: 6px;
       overflow: hidden;
+      background: #ffffff;
+      height: 32px;
     }
 
-    .qty-btn {
-      width: 28px; height: 28px; border: none; background: #eef2ef; color: var(--primary); font-weight: bold; cursor: pointer;
+    .cart-qty-btn {
+      width: 28px;
+      height: 32px;
+      border: none;
+      background: #f0f4f1;
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
     }
 
-    .qty-input {
-      width: 34px; height: 28px; border: none; text-align: center; font-size: 0.88rem; font-weight: 600; outline: none;
+    .cart-qty-btn:hover {
+      background: var(--light-green);
     }
 
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-    th { background: #f4f8f5; color: var(--primary); padding: 10px 12px; font-weight: 600; border-bottom: 2px solid var(--light-green); }
-    td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
-    .summary-total-row { font-weight: 700; font-size: 1.1rem; color: var(--primary); background: #f7fcf8; }
-    .empty-state { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; font-size: 0.9rem; }
+    .cart-qty-num {
+      width: 36px;
+      height: 32px;
+      border: none;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--primary);
+      background: #ffffff;
+      line-height: 32px;
+      outline: none;
+    }
 
+    .cart-remove-btn {
+      color: #e63946;
+      background: transparent;
+      border: none;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 4px;
+      margin-left: 4px;
+    }
+
+    .btn-checkout {
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 30px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background 0.2s;
+    }
+
+    .btn-checkout:hover {
+      background: var(--primary-hover);
+    }
+
+    /* Confirmation View */
     #confirmation-screen {
       display: none;
       text-align: center;
@@ -264,12 +479,14 @@
 <body>
 
   <div class="container" id="form-container">
+    
     <header class="form-header">
       <h1>Cake Ordering Form</h1>
       <p>Select your items and complete your details to send your order</p>
     </header>
 
     <form id="cake-order-form" onsubmit="handleCustomerSubmit(event)">
+      
       <!-- Customer Information Card -->
       <div class="card">
         <div class="card-title">
@@ -285,7 +502,7 @@
             <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
           </div>
           
-          <!-- Date Format DD/MM/YYYY -->
+          <!-- Pickup Date DD/MM/YYYY -->
           <div class="form-group">
             <label for="pickupDate">Pickup Date (DD/MM/YYYY) *</label>
             <input type="text" id="pickupDate" required placeholder="DD/MM/YYYY" maxlength="10">
@@ -307,7 +524,7 @@
         </div>
       </div>
 
-      <!-- Item Selection Section -->
+      <!-- Item Catalog Accordions -->
       <div class="card">
         <div class="card-title">
           <span><i class="fa-solid fa-cake-candles"></i> Select Items</span>
@@ -346,34 +563,9 @@
         </div>
       </div>
 
-      <!-- Real-Time Summary -->
-      <div class="card">
-        <div class="card-title">
-          <span><i class="fa-solid fa-receipt"></i> Order Summary</span>
-          <span id="selected-count-badge" style="font-size: 0.8rem; background: var(--light-green); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600;">0 ITEMS SELECTED</span>
-        </div>
-        
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Item Name</th>
-                <th>Option / Size</th>
-                <th>Price</th>
-                <th style="text-align: center;">Qty</th>
-                <th style="text-align: right;">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody id="summary-tbody"></tbody>
-          </table>
-          <div id="empty-msg" class="empty-state">
-            No items selected yet. Choose items above to update this summary automatically.
-          </div>
-        </div>
-      </div>
-
+      <!-- Submit Order Button -->
       <div style="text-align: center; margin-top: 30px;">
-        <button type="submit" class="btn-submit">
+        <button type="submit" class="btn-checkout" style="max-width: 360px; margin: 0 auto;">
           <i class="fa-solid fa-paper-plane"></i> Submit Order
         </button>
       </div>
@@ -381,12 +573,48 @@
     </form>
   </div>
 
+  <!-- Floating Cart Bar at Bottom -->
+  <div class="cart-float-bar" id="cart-float-bar" onclick="openCartDrawer()">
+    <div class="cart-float-info">
+      <div class="cart-icon-wrapper">
+        <i class="fa-solid fa-basket-shopping"></i>
+        <div class="cart-badge" id="cart-badge-count">0</div>
+      </div>
+      <div class="cart-total-price" id="cart-float-total">$0</div>
+    </div>
+    <div class="cart-view-btn">
+      <span>View Cart</span>
+      <i class="fa-solid fa-arrow-right"></i>
+    </div>
+  </div>
+
+  <!-- Slide-out Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cart-overlay" onclick="closeCartDrawer()"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="drawer-header">
+      <h3><i class="fa-solid fa-basket-shopping"></i> Your Order Cart</h3>
+      <button class="drawer-close-btn" onclick="closeCartDrawer()">&times;</button>
+    </div>
+    <div class="drawer-body" id="cart-drawer-body">
+      <!-- Items dynamically injected here -->
+    </div>
+    <div class="drawer-footer">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <span style="font-weight: 600; color: var(--text-muted);">Estimated Total</span>
+        <span style="font-weight: 800; font-size: 1.3rem; color: var(--primary);" id="drawer-total-price">$0</span>
+      </div>
+      <button class="btn-checkout" onclick="closeCartDrawer()">
+        Confirm Order Selection
+      </button>
+    </div>
+  </div>
+
   <!-- Confirmation Screen -->
   <div class="container" id="confirmation-screen">
     <i class="fa-solid fa-circle-check"></i>
     <h2>Order Submitted Successfully!</h2>
     <p>Thank you for your order. A PDF copy of your summary has been automatically saved to your device.</p>
-    <button class="btn-submit" onclick="resetFormView()" style="max-width: 260px;">
+    <button class="btn-checkout" onclick="resetFormView()" style="max-width: 260px; margin: 0 auto;">
       <i class="fa-solid fa-arrow-left"></i> Submit Another Order
     </button>
   </div>
@@ -445,10 +673,12 @@
     let catalog = JSON.parse(localStorage.getItem('cake_catalog')) || DEFAULT_CATALOG;
     let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_TIME_SLOTS };
     let submissions = JSON.parse(localStorage.getItem('cake_submissions')) || [];
-    let selectedState = {};
+    
+    // Keyed by item_id + size_index
+    let cart = {};
 
     function initForm() {
-      // Date in DD/MM/YYYY format
+      // Pickup Date DD/MM/YYYY Format
       const dateInput = document.getElementById('pickupDate');
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + pickupSettings.leadDays);
@@ -469,7 +699,7 @@
         }
       };
 
-      // Time slots
+      // Pickup Time Slots
       const timeSelect = document.getElementById('pickupTime');
       timeSelect.innerHTML = '';
       pickupSettings.enabledSlots.forEach(slot => {
@@ -478,7 +708,7 @@
         timeSelect.appendChild(opt);
       });
 
-      // Items
+      // Render Items into Categories
       ['whole', 'pastries', 'sweets', 'addons'].forEach(cat => {
         const catContainer = document.getElementById(`cat-${cat}`);
         if (!catContainer) return;
@@ -487,29 +717,29 @@
           catContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item));
         });
       });
+
+      updateCartUI();
     }
 
     function createItemCardHtml(item) {
       const priceText = item.prices.map(p => `$${p.price}`).join(' / ');
       let optionsHtml = item.prices.length > 1 
-        ? `<select class="size-select" id="size_${item.id}" onchange="updateItemSelection('${item.id}')">
+        ? `<select class="size-select-box" id="select_size_${item.id}">
              ${item.prices.map((p, idx) => `<option value="${idx}">${p.label} -$${p.price}</option>`).join('')}
            </select>`
         : `<span style="font-size:0.8rem; color:#666;">${item.prices[0].label}</span>`;
 
       return `
         <div class="item-card" id="card_${item.id}">
-          <div class="item-info">
+          <div>
             <div class="item-name">${item.name}</div>
             <div class="item-price">${priceText}</div>
           </div>
-          <div class="item-controls">
+          <div class="item-actions">
             ${optionsHtml}
-            <div class="qty-picker">
-              <button type="button" class="qty-btn" onclick="changeQty('${item.id}', -1)">-</button>
-              <input type="number" id="qty_${item.id}" class="qty-input" value="0" min="0" onchange="updateItemSelection('${item.id}')">
-              <button type="button" class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
-            </div>
+            <button type="button" class="btn-add-cart" onclick="addToCart('${item.id}')">
+              <i class="fa-solid fa-cart-plus"></i> Add
+            </button>
           </div>
         </div>
       `;
@@ -519,76 +749,121 @@
       document.getElementById(id).classList.toggle('collapsed');
     }
 
-    function changeQty(itemId, delta) {
-      const input = document.getElementById(`qty_${itemId}`);
-      let currentVal = Math.max(0, (parseInt(input.value) || 0) + delta);
-      input.value = currentVal;
-      updateItemSelection(itemId);
-    }
-
-    function updateItemSelection(itemId) {
+    // CART MANAGEMENT FUNCTIONS
+    function addToCart(itemId) {
       const item = catalog.find(i => i.id === itemId);
-      const qty = parseInt(document.getElementById(`qty_${itemId}`).value) || 0;
-      const sizeSelect = document.getElementById(`size_${itemId}`);
+      const sizeSelect = document.getElementById(`select_size_${itemId}`);
       const sizeIdx = sizeSelect ? parseInt(sizeSelect.value) || 0 : 0;
-      const card = document.getElementById(`card_${itemId}`);
+      
+      const cartKey = `${itemId}_${sizeIdx}`;
 
-      if (qty > 0) {
-        selectedState[itemId] = {
-          id: itemId, name: item.name, option: item.prices[sizeIdx].label,
-          price: item.prices[sizeIdx].price, qty, subtotal: item.prices[sizeIdx].price * qty
-        };
-        card.classList.add('has-qty');
+      if (cart[cartKey]) {
+        cart[cartKey].qty += 1;
       } else {
-        delete selectedState[itemId];
-        card.classList.remove('has-qty');
+        cart[cartKey] = {
+          cartKey: cartKey,
+          itemId: itemId,
+          name: item.name,
+          option: item.prices[sizeIdx].label,
+          price: item.prices[sizeIdx].price,
+          qty: 1
+        };
       }
-      renderSummaryTable();
+
+      updateCartUI();
+      openCartDrawer();
     }
 
-    function renderSummaryTable() {
-      const tbody = document.getElementById('summary-tbody');
-      const emptyMsg = document.getElementById('empty-msg');
-      const badge = document.getElementById('selected-count-badge');
-      tbody.innerHTML = '';
-      const items = Object.values(selectedState);
-      let grandTotal = 0, totalCount = 0;
-
-      if (items.length === 0) {
-        emptyMsg.style.display = 'block';
-        badge.innerText = '0 ITEMS SELECTED';
-        return;
+    function updateCartQty(cartKey, delta) {
+      if (!cart[cartKey]) return;
+      cart[cartKey].qty += delta;
+      if (cart[cartKey].qty <= 0) {
+        delete cart[cartKey];
       }
-      emptyMsg.style.display = 'none';
+      updateCartUI();
+    }
 
-      items.forEach(item => {
-        grandTotal += item.subtotal; totalCount += item.qty;
-        tbody.innerHTML += `
-          <tr>
-            <td style="font-weight: 500;">${item.name}</td>
-            <td style="color: #666;">${item.option}</td>
-            <td>$${item.price}</td>
-            <td style="text-align: center; font-weight: 600;">${item.qty}</td>
-            <td style="text-align: right; font-weight: 600;">$${item.subtotal}</td>
-          </tr>
-        `;
+    function removeFromCart(cartKey) {
+      delete cart[cartKey];
+      updateCartUI();
+    }
+
+    function updateCartUI() {
+      const cartItems = Object.values(cart);
+      let totalQty = 0;
+      let totalPrice = 0;
+
+      cartItems.forEach(item => {
+        totalQty += item.qty;
+        totalPrice += (item.price * item.qty);
       });
 
-      tbody.innerHTML += `
-        <tr class="summary-total-row">
-          <td colspan="3">Estimated Total Amount</td>
-          <td style="text-align: center;">${totalCount}</td>
-          <td style="text-align: right; color: var(--primary);">$${grandTotal}</td>
-        </tr>
-      `;
-      badge.innerText = `${totalCount} ITEM(S) SELECTED`;
+      // Update Floating Bottom Bar
+      document.getElementById('cart-badge-count').innerText = totalQty;
+      document.getElementById('cart-float-total').innerText = `$${totalPrice}`;
+      document.getElementById('drawer-total-price').innerText = `$${totalPrice}`;
+
+      // Highlight Cards on main form
+      catalog.forEach(item => {
+        const card = document.getElementById(`card_${item.id}`);
+        const hasItem = cartItems.some(ci => ci.itemId === item.id);
+        if (card) {
+          if (hasItem) card.classList.add('has-in-cart');
+          else card.classList.remove('has-in-cart');
+        }
+      });
+
+      // Render Drawer Content
+      const drawerBody = document.getElementById('cart-drawer-body');
+      if (cartItems.length === 0) {
+        drawerBody.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); margin-top: 60px;">
+            <i class="fa-solid fa-basket-shopping" style="font-size: 3rem; margin-bottom: 12px; color: var(--border-color);"></i>
+            <p>Your cart is empty.</p>
+            <p style="font-size: 0.85rem; margin-top: 4px;">Choose cakes or pastries above to add them to your order.</p>
+          </div>
+        `;
+      } else {
+        drawerBody.innerHTML = '';
+        cartItems.forEach(item => {
+          drawerBody.innerHTML += `
+            <div class="cart-item-row">
+              <div class="cart-item-details">
+                <div class="cart-item-title">${item.name}</div>
+                <div class="cart-item-option">${item.option} ($${item.price})</div>
+                <div class="cart-item-price">$${item.price * item.qty}</div>
+              </div>
+              <div class="cart-qty-picker">
+                <button type="button" class="cart-qty-btn" onclick="updateCartQty('${item.cartKey}', -1)">-</button>
+                <div class="cart-qty-num">${item.qty}</div>
+                <button type="button" class="cart-qty-btn" onclick="updateCartQty('${item.cartKey}', 1)">+</button>
+              </div>
+              <button type="button" class="cart-remove-btn" onclick="removeFromCart('${item.cartKey}')" title="Remove">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          `;
+        });
+      }
+    }
+
+    function openCartDrawer() {
+      document.getElementById('cart-overlay').classList.add('active');
+      document.getElementById('cart-drawer').classList.add('active');
+    }
+
+    function closeCartDrawer() {
+      document.getElementById('cart-overlay').classList.remove('active');
+      document.getElementById('cart-drawer').classList.remove('active');
     }
 
     function handleCustomerSubmit(e) {
       e.preventDefault();
-      const items = Object.values(selectedState);
+      const items = Object.values(cart);
       if (items.length === 0) {
-        alert("Please select at least one item."); return;
+        alert("Your cart is empty! Please add at least one item before submitting.");
+        openCartDrawer();
+        return;
       }
 
       const guestName = document.getElementById('guestName').value;
@@ -599,11 +874,12 @@
       const remarks = document.getElementById('remarks').value || 'None';
 
       const orderId = Math.floor(100000 + Math.random() * 900000);
-      const totalAmount = items.reduce((sum, i) => sum + i.subtotal, 0);
+      const totalAmount = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
       const submission = {
         id: orderId, guestName, tel, pickupDate, pickupTime, wording, remarks,
-        items, totalAmount, dateSubmitted: new Date().toLocaleString()
+        items: items.map(i => ({ name: i.name, option: i.option, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
+        totalAmount, dateSubmitted: new Date().toLocaleString()
       };
 
       submissions.unshift(submission);
@@ -613,6 +889,7 @@
       generatePdf(submission);
 
       document.getElementById('form-container').style.display = 'none';
+      document.getElementById('cart-float-bar').style.display = 'none';
       document.getElementById('confirmation-screen').style.display = 'block';
       window.scrollTo(0, 0);
     }
@@ -620,7 +897,7 @@
     function generatePdf(sub) {
       let pdfContent = `
         <div style="padding: 24px; font-family: sans-serif;">
-          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Order Summary - #${sub.id}</h2>
+          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
           <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Date: ${sub.dateSubmitted}</p>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
             <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td>${sub.guestName}</td></tr>
@@ -629,7 +906,7 @@
             <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td>${sub.wording}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td>${sub.remarks}</td></tr>
           </table>
-          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Items</h3>
+          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
             <thead>
               <tr style="background: #f4f8f5;"><th>Item</th><th>Option</th><th align="right">Price</th><th align="center">Qty</th><th align="right">Subtotal</th></tr>
@@ -657,10 +934,11 @@
 
     function resetFormView() {
       document.getElementById('cake-order-form').reset();
-      selectedState = {};
-      renderSummaryTable();
+      cart = {};
+      updateCartUI();
       document.getElementById('confirmation-screen').style.display = 'none';
       document.getElementById('form-container').style.display = 'block';
+      document.getElementById('cart-float-bar').style.display = 'flex';
     }
 
     initForm();
