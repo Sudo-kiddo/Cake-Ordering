@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cake Ordering Form - Staff Admin</title>
+  <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -11,50 +12,135 @@
 
   <style>
     :root {
-      --primary: #1b4332; --primary-hover: #143225; --secondary: #2d6a4f; --accent: #52b788;
-      --light-green: #d8f3dc; --bg-cream: #f4f6f4; --card-bg: #ffffff; --text-dark: #2d3748;
-      --text-muted: #718096; --border-color: #e2e8f0; --radius-sm: 8px; --radius-md: 12px;
+      --primary: #1b4332;
+      --primary-hover: #143225;
+      --secondary: #2d6a4f;
+      --accent: #52b788;
+      --light-green: #d8f3dc;
+      --bg-cream: #f4f6f4;
+      --card-bg: #ffffff;
+      --text-dark: #2d3748;
+      --text-muted: #718096;
+      --border-color: #e2e8f0;
+      --radius-sm: 8px;
+      --radius-md: 12px;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
     body { background-color: var(--bg-cream); color: var(--text-dark); padding-bottom: 60px; }
 
     nav {
-      background: var(--primary); color: white; padding: 16px 24px; display: flex;
-      align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
+      background: var(--primary);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(27,67,50,0.1);
     }
-    .nav-brand { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; }
+    .nav-brand { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .nav-tabs { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.1); padding: 4px; border-radius: var(--radius-sm); }
     .tab-btn {
       background: transparent; border: none; color: rgba(255, 255, 255, 0.8); padding: 8px 16px;
       font-size: 0.9rem; font-weight: 500; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
     }
+    .tab-btn:hover { color: white; background: rgba(255,255,255,0.15); }
     .tab-btn.active { background: white; color: var(--primary); font-weight: 600; }
 
-    .container { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+    .container { max-width: 1040px; margin: 24px auto; padding: 0 16px; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
     .card { background: white; border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); }
-    .card-title { font-size: 1.15rem; font-weight: 600; color: var(--primary); margin-bottom: 18px; border-bottom: 2px solid var(--light-green); padding-bottom: 10px; display: flex; justify-content: space-between; }
+    .card-title {
+      font-size: 1.15rem; font-weight: 600; color: var(--primary); margin-bottom: 18px;
+      border-bottom: 2px solid var(--light-green); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+    }
 
     .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
     .full-width { grid-column: span 2; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.88rem; font-weight: 600; }
-    .form-group input, .form-group select { padding: 10px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); }
+    .form-group input, .form-group select { padding: 10px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--secondary); }
 
-    .btn { padding: 10px 20px; font-weight: 600; border-radius: var(--radius-sm); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+    .btn { padding: 10px 20px; font-weight: 600; border-radius: var(--radius-sm); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
     .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); }
     .btn-secondary { background: #eef2ef; color: var(--primary); border: 1px solid var(--border-color); }
+    .btn-secondary:hover { background: var(--light-green); }
     .btn-danger { background: #fee2e2; color: #991b1b; }
+    .btn-danger:hover { background: #fca5a5; }
 
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-    th { background: #f4f8f5; color: var(--primary); padding: 10px 12px; border-bottom: 2px solid var(--light-green); }
-    td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
+    th { background: #f4f8f5; color: var(--primary); padding: 12px 14px; font-weight: 600; border-bottom: 2px solid var(--light-green); }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
 
-    .time-slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 10px; }
-    .time-slot-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fafafa; border: 1px solid var(--border-color); border-radius: var(--radius-sm); }
+    /* 15-MIN TIME SLOT GRID STYLING */
+    .time-slot-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .time-slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .time-slot-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #fafafa;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .time-slot-item:hover {
+      background: #f0f7f2;
+      border-color: var(--accent);
+    }
+    .time-slot-item input[type="checkbox"] {
+      accent-color: var(--primary);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .badge-cat {
+      text-transform: capitalize;
+      font-size: 0.8rem;
+      background: #eef2ef;
+      color: var(--primary);
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      nav { flex-direction: column; gap: 12px; }
+      .nav-tabs { width: 100%; overflow-x: auto; }
+      .form-grid { grid-template-columns: 1fr; }
+      .full-width { grid-column: span 1; }
+      .time-slot-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+    }
   </style>
 </head>
 <body>
@@ -65,14 +151,14 @@
       <button class="tab-btn active" onclick="switchTab('submissions')"><i class="fa-solid fa-list-check"></i> Submissions</button>
       <button class="tab-btn" onclick="switchTab('items')"><i class="fa-solid fa-utensils"></i> Menu Items</button>
       <button class="tab-btn" onclick="switchTab('email')"><i class="fa-solid fa-envelope"></i> Email</button>
-      <button class="tab-btn" onclick="switchTab('pickup')"><i class="fa-solid fa-clock"></i> Pickup</button>
+      <button class="tab-btn" onclick="switchTab('pickup')"><i class="fa-solid fa-clock"></i> Pickup Settings</button>
       <button class="tab-btn" onclick="switchTab('share')"><i class="fa-solid fa-qrcode"></i> Share / QR Code</button>
     </div>
   </nav>
 
   <div class="container">
 
-    <!-- SUBMISSIONS -->
+    <!-- SUBMISSIONS LOG TAB -->
     <div id="tab-submissions" class="tab-content active">
       <div class="card">
         <div class="card-title">
@@ -86,20 +172,25 @@
             </thead>
             <tbody id="submissions-tbody"></tbody>
           </table>
+          <div id="no-submissions-msg" style="text-align: center; color: var(--text-muted); padding: 30px; font-style: italic; display: none;">
+            No submitted orders yet. Customer submissions will appear here.
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ITEMS -->
+    <!-- MENU ITEMS MANAGEMENT TAB -->
     <div id="tab-items" class="tab-content">
       <div class="card">
-        <div class="card-title">Add / Edit Menu Item</div>
-        <form onsubmit="handleSaveItem(event)">
+        <div class="card-title">
+          <span id="form-item-title"><i class="fa-solid fa-plus-circle"></i> Add New Menu Item</span>
+        </div>
+        <form id="item-form" onsubmit="handleSaveItem(event)">
           <input type="hidden" id="edit-item-id">
           <div class="form-grid">
-            <div class="form-group"><label>Item Name *</label><input type="text" id="item-name" required></div>
+            <div class="form-group"><label for="item-name">Item Name *</label><input type="text" id="item-name" required placeholder="e.g. Green Tea Chocolate Cake"></div>
             <div class="form-group">
-              <label>Category *</label>
+              <label for="item-category">Category *</label>
               <select id="item-category" required>
                 <option value="whole">Whole & Specialty Cakes</option>
                 <option value="pastries">Pastries, Puffs & Slices</option>
@@ -107,62 +198,89 @@
                 <option value="addons">Add-ons & Accessories</option>
               </select>
             </div>
-            <div class="form-group"><label>Slice / Standard Price ($) *</label><input type="number" id="item-price-standard" required min="0"></div>
-            <div class="form-group"><label>Whole / Large Price ($) (Optional)</label><input type="number" id="item-price-large" min="0"></div>
+            <div class="form-group"><label for="item-price-standard">Slice / Standard Price ($) *</label><input type="number" id="item-price-standard" required min="0" placeholder="60"></div>
+            <div class="form-group"><label for="item-price-large">Whole / Large Price ($) (Optional)</label><input type="number" id="item-price-large" min="0" placeholder="340"></div>
             <div class="form-group full-width" style="display: flex; gap: 10px; margin-top: 10px;">
-              <button type="submit" class="btn btn-primary">Save Item</button>
+              <button type="submit" class="btn btn-primary" id="btn-save-item"><i class="fa-solid fa-floppy-disk"></i> Save Item</button>
+              <button type="button" class="btn btn-secondary" onclick="resetItemForm()">Cancel</button>
             </div>
           </div>
         </form>
       </div>
 
       <div class="card">
-        <div class="card-title">Current Menu Catalog</div>
+        <div class="card-title">
+          <span><i class="fa-solid fa-list"></i> Current Menu Catalog</span>
+          <span id="catalog-count-badge" style="font-size: 0.85rem; background: var(--light-green); color: var(--primary); padding: 4px 12px; border-radius: 12px;">0 Items</span>
+        </div>
         <div class="table-container">
           <table>
-            <thead><tr><th>Item Name</th><th>Category</th><th>Prices</th><th>Action</th></tr></thead>
+            <thead><tr><th>Item Name</th><th>Category</th><th>Options & Prices</th><th>Action</th></tr></thead>
             <tbody id="items-tbody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- EMAIL -->
+    <!-- EMAIL DISPATCH TAB -->
     <div id="tab-email" class="tab-content">
       <div class="card">
-        <div class="card-title">Email Dispatch Setup</div>
+        <div class="card-title">Email Notification Settings</div>
         <form onsubmit="handleSaveEmail(event)">
           <div class="form-grid">
-            <div class="form-group"><label>Primary Recipient Email *</label><input type="email" id="email-primary" required></div>
-            <div class="form-group"><label>CC Emails (Comma separated)</label><input type="text" id="email-cc"></div>
-            <div class="form-group full-width"><button type="submit" class="btn btn-primary">Save Email Settings</button></div>
+            <div class="form-group"><label for="email-primary">Primary Recipient Email *</label><input type="email" id="email-primary" required placeholder="pastry.kitchen@restaurant.com"></div>
+            <div class="form-group"><label for="email-cc">CC Email Addresses (Comma separated)</label><input type="text" id="email-cc" placeholder="manager@restaurant.com"></div>
+            <div class="form-group full-width" style="margin-top: 10px;"><button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Email Settings</button></div>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- PICKUP -->
+    <!-- PICKUP TIME SLOTS TAB (15-MIN INTERVALS) -->
     <div id="tab-pickup" class="tab-content">
       <div class="card">
-        <div class="card-title">Pickup Rules & Time Slots</div>
+        <div class="card-title">
+          <span>Pickup Rules & 15-Minute Time Slots</span>
+        </div>
         <form onsubmit="handleSavePickup(event)">
           <div class="form-grid">
-            <div class="form-group"><label>Minimum Advance Notice (Days)</label><input type="number" id="pickup-lead" min="0"></div>
-            <div class="form-group full-width"><label>Available Time Slots:</label><div class="time-slot-grid" id="time-slots"></div></div>
-            <div class="form-group full-width" style="margin-top: 10px;"><button type="submit" class="btn btn-primary">Save Pickup Settings</button></div>
+            <div class="form-group">
+              <label for="pickup-lead">Minimum Advance Notice (Days)</label>
+              <input type="number" id="pickup-lead" value="1" min="0">
+            </div>
+
+            <div class="form-group full-width" style="margin-top: 10px;">
+              <div class="time-slot-toolbar">
+                <label style="font-size: 0.95rem; font-weight: 700; color: var(--primary);">
+                  Available Time Slots (10:00 to 24:00 - 15 min intervals):
+                </label>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-secondary" onclick="toggleAllSlots(true)" style="padding: 4px 10px; font-size: 0.8rem;">Select All</button>
+                  <button type="button" class="btn btn-secondary" onclick="toggleAllSlots(false)" style="padding: 4px 10px; font-size: 0.8rem;">Deselect All</button>
+                </div>
+              </div>
+
+              <div class="time-slot-grid" id="time-slot-container">
+                <!-- Dynamically generated 15-minute time slots from 10:00 to 24:00 -->
+              </div>
+            </div>
+
+            <div class="form-group full-width" style="margin-top: 16px;">
+              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Pickup Settings</button>
+            </div>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- SHARE & QR CODE -->
+    <!-- SHARE & QR CODE TAB -->
     <div id="tab-share" class="tab-content">
       <div class="card" style="text-align: center;">
         <div class="card-title">Shareable Link & Printable QR Code</div>
-        <p style="color: var(--text-muted); margin-bottom: 20px;">This QR Code directly targets your customer ordering form page (`index.html`).</p>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">This QR Code targets your customer ordering form page (`index.html`).</p>
         <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 20px;"></div>
         <div style="max-width: 500px; margin: 0 auto; display: flex; gap: 8px;">
-          <input type="text" id="share-url" readonly style="flex:1; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px;">
+          <input type="text" id="share-url" readonly style="flex:1; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
           <button class="btn btn-secondary" onclick="copyUrl()"><i class="fa-solid fa-copy"></i> Copy Link</button>
         </div>
       </div>
@@ -171,12 +289,76 @@
   </div>
 
   <script>
-    const ALL_SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+    // --- 1. GENERATE ALL 15-MINUTE INTERVALS FROM 10:00 TO 24:00 ---
+    function generate15MinTimeSlots() {
+      const slots = [];
+      for (let hour = 10; hour <= 24; hour++) {
+        const hStr = String(hour).padStart(2, '0');
+        slots.push(`${hStr}:00`);
+        if (hour < 24) {
+          slots.push(`${hStr}:15`);
+          slots.push(`${hStr}:30`);
+          slots.push(`${hStr}:45`);
+        }
+      }
+      return slots;
+    }
 
-    let catalog = JSON.parse(localStorage.getItem('cake_catalog')) || [];
+    const ALL_15MIN_SLOTS = generate15MinTimeSlots();
+
+    // --- 2. COMPLETE CATALOG TRANSCRIBED DATASET ---
+    const DEFAULT_CATALOG = [
+      { id: "item_1", name: "Green Tea Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_2", name: "Jasmine Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_3", name: "Blueberry Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_4", name: "Mango Dome", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_5", name: "Strawberry Olive Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_6", name: "Durian Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 88 }, { label: "Whole Cake", price: 380 }] },
+      { id: "item_7", name: "Seasonal Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 68 }, { label: "Whole Cake", price: 360 }] },
+      { id: "item_8", name: "Berry Pandan", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_9", name: "Earl Grey Tea Chiffon Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_10", name: "Berrylicious Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_11", name: "Peacheous Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_12", name: "Mango Snow", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_13", name: "Forêt Noire (Contains alcohol)", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_14", name: "Durian Pandan Opera Cake", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_15", name: "D197 Durian Mille Feuille", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_16", name: "Durian Cream Cake Box", cat: "whole", prices: [{ label: "1 Box", price: 180 }] },
+      { id: "item_17", name: "Durian Pandan 3D Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+      { id: "item_18", name: "Durian Burnt Basque Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 88 }, { label: "Whole Cake", price: 420 }] },
+      { id: "item_19", name: "Lotus Biscoff Durian Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 198 }, { label: "Whole Cake", price: 380 }] },
+      { id: "item_20", name: "Durian Snowy Cheddar Cheese Pandan Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 210 }] },
+      { id: "item_21", name: "Durian Serradura", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+      { id: "item_22", name: "Melon Mousse Cake", cat: "whole", prices: [{ label: "Slice", price: 98 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_23", name: "Taro Cream Cake", cat: "whole", prices: [{ label: "Slice", price: 68 }, { label: "Whole Cake", price: 360 }] },
+      { id: "item_24", name: "Pandan Durian Roulade (1pc)", cat: "pastries", prices: [{ label: "1 pc", price: 100 }] },
+      { id: "item_25", name: "D197 Durian Cheese Puff (8pcs)", cat: "pastries", prices: [{ label: "8 pcs", price: 228 }] },
+      { id: "item_26", name: "Mini D24 Durian Cheese Tart (12pcs)", cat: "pastries", prices: [{ label: "12 pcs", price: 168 }] },
+      { id: "item_27", name: "Pandan Mango Cream Roll", cat: "pastries", prices: [{ label: "1 pc", price: 60 }] },
+      { id: "item_28", name: "Pandan Chiffon Cake", cat: "pastries", prices: [{ label: "1 pc", price: 138 }] },
+      { id: "item_29", name: "Scone (4pcs)", cat: "pastries", prices: [{ label: "4 pcs", price: 72 }] },
+      { id: "item_30", name: "Blueberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_31", name: "Chocolate Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_32", name: "Mango Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_33", name: "Melon Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_34", name: "Strawberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_35", name: "Earl Grey Roulade with Mochi", cat: "pastries", prices: [{ label: "1 pc", price: 68 }] },
+      { id: "item_36", name: "Durian Serradura Cup", cat: "pastries", prices: [{ label: "1 Cup", price: 88 }] },
+      { id: "item_37", name: "Tiramisu", cat: "pastries", prices: [{ label: "1 Cup", price: 60 }] },
+      { id: "item_38", name: "Coffee Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+      { id: "item_39", name: "XO Sauce (238g)", cat: "sweets", prices: [{ label: "1 Jar", price: 238 }] },
+      { id: "item_40", name: "A&B Crystal Walnut (0.5lb)", cat: "sweets", prices: [{ label: "0.5 lb", price: 198 }] },
+      { id: "item_41", name: "Salted Egg & Sakura Shrimp Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+      { id: "item_42", name: "Butterfly Cookies", cat: "sweets", prices: [{ label: "1 Box", price: 98 }] },
+      { id: "item_43", name: "Assorted Chocolate (9pcs)", cat: "sweets", prices: [{ label: "9 pcs", price: 288 }] },
+      { id: "item_44", name: "ICONIC Eats Birthday Cake", cat: "addons", prices: [{ label: "Standard", price: 0 }] },
+      { id: "item_45", name: "Thermal Bag & Ice Gel", cat: "addons", prices: [{ label: "1 Set", price: 50 }] }
+    ];
+
+    let catalog = JSON.parse(localStorage.getItem('cake_catalog')) || DEFAULT_CATALOG;
     let submissions = JSON.parse(localStorage.getItem('cake_submissions')) || [];
     let emailSettings = JSON.parse(localStorage.getItem('cake_email')) || { primary: 'pastry.kitchen@restaurant.com', cc: '' };
-    let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_SLOTS };
+    let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -188,43 +370,108 @@
 
       if (tabId === 'submissions') renderSubmissions();
       if (tabId === 'items') renderItems();
+      if (tabId === 'pickup') renderPickupSettings();
       if (tabId === 'share') renderQr();
     }
 
+    // --- SUBMISSIONS LOGIC ---
     function renderSubmissions() {
       const tbody = document.getElementById('submissions-tbody');
+      const emptyMsg = document.getElementById('no-submissions-msg');
       tbody.innerHTML = '';
-      submissions.forEach(sub => {
-        const qty = sub.items.reduce((s, i) => s + i.qty, 0);
+
+      if (submissions.length === 0) {
+        emptyMsg.style.display = 'block';
+        return;
+      }
+      emptyMsg.style.display = 'none';
+
+      submissions.forEach((sub, idx) => {
+        const totalQty = sub.items.reduce((s, i) => s + i.qty, 0);
         tbody.innerHTML += `
           <tr>
-            <td>#${sub.id}</td><td>${sub.guestName}</td><td>${sub.tel}</td>
-            <td>${sub.pickupDate} ${sub.pickupTime}</td><td>${qty}</td><td>$${sub.totalAmount}</td>
-            <td><button class="btn btn-secondary" onclick="downloadPdf(${sub.id})" style="padding: 4px 8px; font-size: 0.8rem;">PDF</button></td>
+            <td style="font-weight: 600;">#${sub.id}</td>
+            <td>${sub.guestName}</td>
+            <td>${sub.tel}</td>
+            <td>${sub.pickupDate} ${sub.pickupTime}</td>
+            <td>${totalQty}</td>
+            <td style="font-weight: 600; color: var(--primary);">$${sub.totalAmount}</td>
+            <td>
+              <button class="btn btn-secondary" onclick="downloadPdf(${idx})" style="padding: 4px 8px; font-size: 0.8rem;">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+              </button>
+            </td>
           </tr>
         `;
       });
     }
 
     function clearSubmissions() {
-      if (confirm("Clear all submissions?")) {
+      if (confirm("Are you sure you want to clear all submitted orders?")) {
         submissions = [];
         localStorage.setItem('cake_submissions', JSON.stringify([]));
         renderSubmissions();
       }
     }
 
+    function downloadPdf(index) {
+      const sub = submissions[index];
+      if (!sub) return;
+
+      let pdfContent = `
+        <div style="padding: 24px; font-family: sans-serif;">
+          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
+          <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Submitted: ${sub.dateSubmitted}</p>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td>${sub.guestName}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Pickup:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td>${sub.wording}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td>${sub.remarks}</td></tr>
+          </table>
+          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
+            <thead>
+              <tr style="background: #f4f8f5;"><th>Item</th><th>Option</th><th align="right">Price</th><th align="center">Qty</th><th align="right">Subtotal</th></tr>
+            </thead>
+            <tbody>
+      `;
+      sub.items.forEach(i => {
+        pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
+      });
+      pdfContent += `
+            <tr style="font-weight: bold;"><td colspan="4" align="right">Total:</td><td align="right" style="color: #1b4332;">$${sub.totalAmount}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      html2pdf().set({
+        margin: 0.5,
+        filename: `Cake_Order_${sub.id}_${sub.guestName.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      }).from(pdfContent).save();
+    }
+
+    // --- ITEM CATALOG LOGIC (ADD / EDIT / DELETE) ---
     function renderItems() {
       const tbody = document.getElementById('items-tbody');
+      const badge = document.getElementById('catalog-count-badge');
       tbody.innerHTML = '';
+      badge.innerText = `${catalog.length} Items`;
+
       catalog.forEach(item => {
         const priceStr = item.prices.map(p => `${p.label}: $${p.price}`).join(' | ');
         tbody.innerHTML += `
           <tr>
-            <td>${item.name}</td><td>${item.cat}</td><td>${priceStr}</td>
+            <td style="font-weight: 600;">${item.name}</td>
+            <td><span class="badge-cat">${item.cat}</span></td>
+            <td>${priceStr}</td>
             <td>
-              <button class="btn btn-secondary" onclick="editItem('${item.id}')" style="padding: 4px 8px;">Edit</button>
-              <button class="btn btn-danger" onclick="deleteItem('${item.id}')" style="padding: 4px 8px;">Delete</button>
+              <button class="btn btn-secondary" onclick="editItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Edit</button>
+              <button class="btn btn-danger" onclick="deleteItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Delete</button>
             </td>
           </tr>
         `;
@@ -237,28 +484,108 @@
       const name = document.getElementById('item-name').value;
       const cat = document.getElementById('item-category').value;
       const stdPrice = parseFloat(document.getElementById('item-price-standard').value) || 0;
-      const lgPrice = document.getElementById('item-price-large').value;
+      const lgPriceInput = document.getElementById('item-price-large').value;
 
       const prices = [{ label: "Slice / Standard", price: stdPrice }];
-      if (lgPrice !== "") prices.push({ label: "Whole Cake", price: parseFloat(lgPrice) || 0 });
+      if (lgPriceInput !== "") {
+        prices.push({ label: "Whole Cake", price: parseFloat(lgPriceInput) || 0 });
+      }
 
       if (editId) {
         const item = catalog.find(i => i.id === editId);
-        if (item) { item.name = name; item.cat = cat; item.prices = prices; }
+        if (item) {
+          item.name = name;
+          item.cat = cat;
+          item.prices = prices;
+        }
       } else {
-        catalog.push({ id: "item_" + Date.now(), name, cat, prices });
+        catalog.push({
+          id: "item_" + Date.now(),
+          name, cat, prices
+        });
       }
 
       localStorage.setItem('cake_catalog', JSON.stringify(catalog));
+      resetItemForm();
       renderItems();
+      alert("Menu item saved successfully!");
+    }
+
+    function editItem(id) {
+      const item = catalog.find(i => i.id === id);
+      if (!item) return;
+
+      document.getElementById('edit-item-id').value = item.id;
+      document.getElementById('item-name').value = item.name;
+      document.getElementById('item-category').value = item.cat;
+      document.getElementById('item-price-standard').value = item.prices[0] ? item.prices[0].price : 0;
+      document.getElementById('item-price-large').value = item.prices[1] ? item.prices[1].price : "";
+      
+      document.getElementById('form-item-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Menu Item: ${item.name}`;
+      document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Item';
+      window.scrollTo(0, 0);
     }
 
     function deleteItem(id) {
-      catalog = catalog.filter(i => i.id !== id);
-      localStorage.setItem('cake_catalog', JSON.stringify(catalog));
-      renderItems();
+      if (confirm("Are you sure you want to delete this item from the catalog?")) {
+        catalog = catalog.filter(i => i.id !== id);
+        localStorage.setItem('cake_catalog', JSON.stringify(catalog));
+        renderItems();
+      }
     }
 
+    function resetItemForm() {
+      document.getElementById('item-form').reset();
+      document.getElementById('edit-item-id').value = '';
+      document.getElementById('form-item-title').innerHTML = '<i class="fa-solid fa-plus-circle"></i> Add New Menu Item';
+      document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Item';
+    }
+
+    // --- PICKUP TIME SLOTS LOGIC ---
+    function renderPickupSettings() {
+      document.getElementById('pickup-lead').value = pickupSettings.leadDays;
+
+      const container = document.getElementById('time-slot-container');
+      container.innerHTML = '';
+
+      ALL_15MIN_SLOTS.forEach(slot => {
+        const checked = pickupSettings.enabledSlots.includes(slot) ? 'checked' : '';
+        container.innerHTML += `
+          <label class="time-slot-item">
+            <input type="checkbox" value="${slot}" ${checked}>
+            <span>${slot}</span>
+          </label>
+        `;
+      });
+    }
+
+    function toggleAllSlots(select) {
+      document.querySelectorAll('#time-slot-container input[type="checkbox"]').forEach(cb => {
+        cb.checked = select;
+      });
+    }
+
+    function handleSavePickup(e) {
+      e.preventDefault();
+      pickupSettings.leadDays = parseInt(document.getElementById('pickup-lead').value) || 0;
+      
+      const checkedBoxes = document.querySelectorAll('#time-slot-container input[type="checkbox"]:checked');
+      pickupSettings.enabledSlots = Array.from(checkedBoxes).map(cb => cb.value);
+
+      localStorage.setItem('cake_pickup', JSON.stringify(pickupSettings));
+      alert("Pickup rules and 15-minute time slots updated!");
+    }
+
+    // --- EMAIL LOGIC ---
+    function handleSaveEmail(e) {
+      e.preventDefault();
+      emailSettings.primary = document.getElementById('email-primary').value;
+      emailSettings.cc = document.getElementById('email-cc').value;
+      localStorage.setItem('cake_email', JSON.stringify(emailSettings));
+      alert("Email settings saved!");
+    }
+
+    // --- SHARE & QR CODE LOGIC ---
     function renderQr() {
       const shareInput = document.getElementById('share-url');
       const currentOrigin = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
@@ -281,41 +608,24 @@
       const shareInput = document.getElementById('share-url');
       shareInput.select();
       document.execCommand('copy');
-      alert("Customer form link copied!");
+      alert("Customer form link copied to clipboard!");
     }
 
-    function handleSaveEmail(e) {
-      e.preventDefault();
-      emailSettings.primary = document.getElementById('email-primary').value;
-      emailSettings.cc = document.getElementById('email-cc').value;
-      localStorage.setItem('cake_email', JSON.stringify(emailSettings));
-      alert("Email settings saved!");
-    }
-
-    function handleSavePickup(e) {
-      e.preventDefault();
-      pickupSettings.leadDays = parseInt(document.getElementById('pickup-lead').value) || 0;
-      const checkedBoxes = document.querySelectorAll('#time-slots input:checked');
-      pickupSettings.enabledSlots = Array.from(checkedBoxes).map(cb => cb.value);
-      localStorage.setItem('cake_pickup', JSON.stringify(pickupSettings));
-      alert("Pickup settings saved!");
-    }
-
-    function loadSettings() {
+    function init() {
       document.getElementById('email-primary').value = emailSettings.primary;
       document.getElementById('email-cc').value = emailSettings.cc;
-      document.getElementById('pickup-lead').value = pickupSettings.leadDays;
 
-      const slotContainer = document.getElementById('time-slots');
-      slotContainer.innerHTML = '';
-      ALL_SLOTS.forEach(slot => {
-        const checked = pickupSettings.enabledSlots.includes(slot) ? 'checked' : '';
-        slotContainer.innerHTML += `<label class="time-slot-item"><input type="checkbox" value="${slot}" ${checked}> ${slot}</label>`;
-      });
+      // Ensure catalog in localStorage is populated with default transcribed items if empty
+      if (!localStorage.getItem('cake_catalog')) {
+        localStorage.setItem('cake_catalog', JSON.stringify(DEFAULT_CATALOG));
+      }
+
+      renderSubmissions();
+      renderItems();
+      renderPickupSettings();
     }
 
-    loadSettings();
-    renderSubmissions();
+    init();
   </script>
 </body>
 </html>
