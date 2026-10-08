@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cake Ordering Form</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2pdf.js for Client-side PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #1b4332;
+      --primary-hover: #143225;
+      --secondary: #2d6a4f;
+      --accent: #52b788;
+      --light-green: #d8f3dc;
+      --bg-cream: #f4f6f4;
+      --card-bg: #ffffff;
+      --text-dark: #2d3748;
+      --text-muted: #718096;
+      --border-color: #e2e8f0;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 2px 4px rgba(27, 67, 50, 0.05);
+      --shadow-md: 0 4px 12px rgba(27, 67, 50, 0.08);
+      --shadow-lg: 0 10px 25px rgba(27, 67, 50, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-dark);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 30px auto;
+      padding: 0 16px;
+    }
+
+    header.form-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: white;
+      padding: 32px 24px;
+      border-radius: var(--radius-lg);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-lg);
+      text-align: center;
+    }
+
+    header.form-header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    header.form-header p {
+      color: var(--light-green);
+      font-size: 0.95rem;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--light-green);
+      padding-bottom: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .full-width {
+      grid-column: span 2;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #fafafa;
+    }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--secondary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 400px;
+      justify-content: center;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .category-accordion {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+      overflow: hidden;
+      background: white;
+    }
+
+    .accordion-header {
+      background: #f4f8f5;
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .accordion-header:hover {
+      background: var(--light-green);
+    }
+
+    .accordion-content {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .accordion-content.collapsed {
+      display: none;
+    }
+
+    .item-card {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #ffffff;
+    }
+
+    .item-card.has-qty {
+      border-color: var(--accent);
+      background-color: #f7fcf8;
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .item-info { margin-bottom: 10px; }
+    .item-name { font-weight: 600; font-size: 0.95rem; color: var(--text-dark); }
+    .item-price { font-size: 0.88rem; color: var(--secondary); font-weight: 600; margin-top: 2px; }
+
+    .item-controls { display: flex; gap: 8px; align-items: center; }
+    .size-select { flex: 1; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.82rem; background: #ffffff; outline: none; }
+
+    .qty-picker {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .qty-btn {
+      width: 28px; height: 28px; border: none; background: #eef2ef; color: var(--primary); font-weight: bold; cursor: pointer;
+    }
+
+    .qty-input {
+      width: 34px; height: 28px; border: none; text-align: center; font-size: 0.88rem; font-weight: 600; outline: none;
+    }
+
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th { background: #f4f8f5; color: var(--primary); padding: 10px 12px; font-weight: 600; border-bottom: 2px solid var(--light-green); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
+    .summary-total-row { font-weight: 700; font-size: 1.1rem; color: var(--primary); background: #f7fcf8; }
+    .empty-state { text-align: center; color: var(--text-muted); padding: 20px; font-style: italic; font-size: 0.9rem; }
+
+    #confirmation-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+
+    #confirmation-screen i { font-size: 4rem; color: var(--accent); margin-bottom: 20px; }
+    #confirmation-screen h2 { font-size: 2rem; color: var(--primary); margin-bottom: 12px; }
+    #confirmation-screen p { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto 24px auto; }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .full-width { grid-column: span 1; }
+      .accordion-content { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="form-container">
+    <header class="form-header">
+      <h1>Cake Ordering Form</h1>
+      <p>Select your items and complete your details to send your order</p>
+    </header>
+
+    <form id="cake-order-form" onsubmit="handleCustomerSubmit(event)">
+      <!-- Customer Information Card -->
+      <div class="card">
+        <div class="card-title">
+          <span><i class="fa-solid fa-user-tag"></i> Customer & Order Details</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="guestName">Guest Name *</label>
+            <input type="text" id="guestName" required placeholder="e.g. Edward">
+          </div>
+          <div class="form-group">
+            <label for="tel">Contact Tel *</label>
+            <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
+          </div>
+          
+          <!-- Date Format DD/MM/YYYY -->
+          <div class="form-group">
+            <label for="pickupDate">Pickup Date (DD/MM/YYYY) *</label>
+            <input type="text" id="pickupDate" required placeholder="DD/MM/YYYY" maxlength="10">
+          </div>
+
+          <div class="form-group">
+            <label for="pickupTime">Pickup Time *</label>
+            <select id="pickupTime" required></select>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="wording">Wording on Cake</label>
+            <input type="text" id="wording" placeholder="e.g. Happy Birthday John!">
+          </div>
+          <div class="form-group full-width">
+            <label for="remarks">Remarks</label>
+            <textarea id="remarks" rows="2" placeholder="Any special requests or notes..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item Selection Section -->
+      <div class="card">
+        <div class="card-title">
+          <span><i class="fa-solid fa-cake-candles"></i> Select Items</span>
+        </div>
+
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-whole')">
+            <span><i class="fa-solid fa-cake-candles" style="margin-right: 8px;"></i> Whole & Specialty Cakes</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="accordion-content" id="cat-whole"></div>
+        </div>
+
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-pastries')">
+            <span><i class="fa-solid fa-bread-slice" style="margin-right: 8px;"></i> Pastries, Puffs & Slices</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="accordion-content collapsed" id="cat-pastries"></div>
+        </div>
+
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-sweets')">
+            <span><i class="fa-solid fa-cookie-bite" style="margin-right: 8px;"></i> Cookies, Sweets & Pantry</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="accordion-content collapsed" id="cat-sweets"></div>
+        </div>
+
+        <div class="category-accordion">
+          <div class="accordion-header" onclick="toggleAccordion('cat-addons')">
+            <span><i class="fa-solid fa-gift" style="margin-right: 8px;"></i> Add-ons & Accessories</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="accordion-content collapsed" id="cat-addons"></div>
+        </div>
+      </div>
+
+      <!-- Real-Time Summary -->
+      <div class="card">
+        <div class="card-title">
+          <span><i class="fa-solid fa-receipt"></i> Order Summary</span>
+          <span id="selected-count-badge" style="font-size: 0.8rem; background: var(--light-green); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-weight: 600;">0 ITEMS SELECTED</span>
+        </div>
+        
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Option / Size</th>
+                <th>Price</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody id="summary-tbody"></tbody>
+          </table>
+          <div id="empty-msg" class="empty-state">
+            No items selected yet. Choose items above to update this summary automatically.
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px;">
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-paper-plane"></i> Submit Order
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Confirmation Screen -->
+  <div class="container" id="confirmation-screen">
+    <i class="fa-solid fa-circle-check"></i>
+    <h2>Order Submitted Successfully!</h2>
+    <p>Thank you for your order. A PDF copy of your summary has been automatically saved to your device.</p>
+    <button class="btn-submit" onclick="resetFormView()" style="max-width: 260px;">
+      <i class="fa-solid fa-arrow-left"></i> Submit Another Order
+    </button>
+  </div>
+
+  <script>
+    const DEFAULT_CATALOG = [
+      { id: "item_1", name: "Green Tea Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_2", name: "Jasmine Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_3", name: "Blueberry Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_4", name: "Mango Dome", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_5", name: "Strawberry Olive Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_6", name: "Durian Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 88 }, { label: "Whole Cake", price: 380 }] },
+      { id: "item_7", name: "Seasonal Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 68 }, { label: "Whole Cake", price: 360 }] },
+      { id: "item_8", name: "Berry Pandan", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_9", name: "Earl Grey Tea Chiffon Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_10", name: "Berrylicious Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_11", name: "Peacheous Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_12", name: "Mango Snow", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_13", name: "Forêt Noire (Contains alcohol)", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_14", name: "Durian Pandan Opera Cake", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_15", name: "D197 Durian Mille Feuille", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_16", name: "Durian Cream Cake Box", cat: "whole", prices: [{ label: "1 Box", price: 180 }] },
+      { id: "item_17", name: "Durian Pandan 3D Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+      { id: "item_18", name: "Durian Burnt Basque Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 88 }, { label: "Whole Cake", price: 420 }] },
+      { id: "item_19", name: "Lotus Biscoff Durian Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 198 }, { label: "Whole Cake", price: 380 }] },
+      { id: "item_20", name: "Durian Snowy Cheddar Cheese Pandan Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 210 }] },
+      { id: "item_21", name: "Durian Serradura", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+      { id: "item_22", name: "Melon Mousse Cake", cat: "whole", prices: [{ label: "Slice", price: 98 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_23", name: "Taro Cream Cake", cat: "whole", prices: [{ label: "Slice", price: 68 }, { label: "Whole Cake", price: 360 }] },
+      { id: "item_24", name: "Pandan Durian Roulade (1pc)", cat: "pastries", prices: [{ label: "1 pc", price: 100 }] },
+      { id: "item_25", name: "D197 Durian Cheese Puff (8pcs)", cat: "pastries", prices: [{ label: "8 pcs", price: 228 }] },
+      { id: "item_26", name: "Mini D24 Durian Cheese Tart (12pcs)", cat: "pastries", prices: [{ label: "12 pcs", price: 168 }] },
+      { id: "item_27", name: "Pandan Mango Cream Roll", cat: "pastries", prices: [{ label: "1 pc", price: 60 }] },
+      { id: "item_28", name: "Pandan Chiffon Cake", cat: "pastries", prices: [{ label: "1 pc", price: 138 }] },
+      { id: "item_29", name: "Scone (4pcs)", cat: "pastries", prices: [{ label: "4 pcs", price: 72 }] },
+      { id: "item_30", name: "Blueberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_31", name: "Chocolate Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_32", name: "Mango Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_33", name: "Melon Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_34", name: "Strawberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_35", name: "Earl Grey Roulade with Mochi", cat: "pastries", prices: [{ label: "1 pc", price: 68 }] },
+      { id: "item_36", name: "Durian Serradura Cup", cat: "pastries", prices: [{ label: "1 Cup", price: 88 }] },
+      { id: "item_37", name: "Tiramisu", cat: "pastries", prices: [{ label: "1 Cup", price: 60 }] },
+      { id: "item_38", name: "Coffee Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+      { id: "item_39", name: "XO Sauce (238g)", cat: "sweets", prices: [{ label: "1 Jar", price: 238 }] },
+      { id: "item_40", name: "A&B Crystal Walnut (0.5lb)", cat: "sweets", prices: [{ label: "0.5 lb", price: 198 }] },
+      { id: "item_41", name: "Salted Egg & Sakura Shrimp Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+      { id: "item_42", name: "Butterfly Cookies", cat: "sweets", prices: [{ label: "1 Box", price: 98 }] },
+      { id: "item_43", name: "Assorted Chocolate (9pcs)", cat: "sweets", prices: [{ label: "9 pcs", price: 288 }] },
+      { id: "item_44", name: "ICONIC Eats Birthday Cake", cat: "addons", prices: [{ label: "Standard", price: 0 }] },
+      { id: "item_45", name: "Thermal Bag & Ice Gel", cat: "addons", prices: [{ label: "1 Set", price: 50 }] }
+    ];
+
+    const ALL_TIME_SLOTS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+
+    let catalog = JSON.parse(localStorage.getItem('cake_catalog')) || DEFAULT_CATALOG;
+    let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_TIME_SLOTS };
+    let submissions = JSON.parse(localStorage.getItem('cake_submissions')) || [];
+    let selectedState = {};
+
+    function initForm() {
+      // Date in DD/MM/YYYY format
+      const dateInput = document.getElementById('pickupDate');
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + pickupSettings.leadDays);
+      const dd = String(tomorrow.getDate()).padStart(2, '0');
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const yyyy = tomorrow.getFullYear();
+      dateInput.value = `${dd}/${mm}/${yyyy}`;
+
+      dateInput.oninput = function(e) {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length > 8) v = v.substring(0, 8);
+        if (v.length >= 5) {
+          e.target.value = `${v.substring(0,2)}/${v.substring(2,4)}/${v.substring(4)}`;
+        } else if (v.length >= 3) {
+          e.target.value = `${v.substring(0,2)}/${v.substring(2)}`;
+        } else {
+          e.target.value = v;
+        }
+      };
+
+      // Time slots
+      const timeSelect = document.getElementById('pickupTime');
+      timeSelect.innerHTML = '';
+      pickupSettings.enabledSlots.forEach(slot => {
+        const opt = document.createElement('option');
+        opt.value = slot; opt.innerText = slot;
+        timeSelect.appendChild(opt);
+      });
+
+      // Items
+      ['whole', 'pastries', 'sweets', 'addons'].forEach(cat => {
+        const catContainer = document.getElementById(`cat-${cat}`);
+        if (!catContainer) return;
+        catContainer.innerHTML = '';
+        catalog.filter(i => i.cat === cat).forEach(item => {
+          catContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item));
+        });
+      });
+    }
+
+    function createItemCardHtml(item) {
+      const priceText = item.prices.map(p => `$${p.price}`).join(' / ');
+      let optionsHtml = item.prices.length > 1 
+        ? `<select class="size-select" id="size_${item.id}" onchange="updateItemSelection('${item.id}')">
+             ${item.prices.map((p, idx) => `<option value="${idx}">${p.label} -$${p.price}</option>`).join('')}
+           </select>`
+        : `<span style="font-size:0.8rem; color:#666;">${item.prices[0].label}</span>`;
+
+      return `
+        <div class="item-card" id="card_${item.id}">
+          <div class="item-info">
+            <div class="item-name">${item.name}</div>
+            <div class="item-price">${priceText}</div>
+          </div>
+          <div class="item-controls">
+            ${optionsHtml}
+            <div class="qty-picker">
+              <button type="button" class="qty-btn" onclick="changeQty('${item.id}', -1)">-</button>
+              <input type="number" id="qty_${item.id}" class="qty-input" value="0" min="0" onchange="updateItemSelection('${item.id}')">
+              <button type="button" class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleAccordion(id) {
+      document.getElementById(id).classList.toggle('collapsed');
+    }
+
+    function changeQty(itemId, delta) {
+      const input = document.getElementById(`qty_${itemId}`);
+      let currentVal = Math.max(0, (parseInt(input.value) || 0) + delta);
+      input.value = currentVal;
+      updateItemSelection(itemId);
+    }
+
+    function updateItemSelection(itemId) {
+      const item = catalog.find(i => i.id === itemId);
+      const qty = parseInt(document.getElementById(`qty_${itemId}`).value) || 0;
+      const sizeSelect = document.getElementById(`size_${itemId}`);
+      const sizeIdx = sizeSelect ? parseInt(sizeSelect.value) || 0 : 0;
+      const card = document.getElementById(`card_${itemId}`);
+
+      if (qty > 0) {
+        selectedState[itemId] = {
+          id: itemId, name: item.name, option: item.prices[sizeIdx].label,
+          price: item.prices[sizeIdx].price, qty, subtotal: item.prices[sizeIdx].price * qty
+        };
+        card.classList.add('has-qty');
+      } else {
+        delete selectedState[itemId];
+        card.classList.remove('has-qty');
+      }
+      renderSummaryTable();
+    }
+
+    function renderSummaryTable() {
+      const tbody = document.getElementById('summary-tbody');
+      const emptyMsg = document.getElementById('empty-msg');
+      const badge = document.getElementById('selected-count-badge');
+      tbody.innerHTML = '';
+      const items = Object.values(selectedState);
+      let grandTotal = 0, totalCount = 0;
+
+      if (items.length === 0) {
+        emptyMsg.style.display = 'block';
+        badge.innerText = '0 ITEMS SELECTED';
+        return;
+      }
+      emptyMsg.style.display = 'none';
+
+      items.forEach(item => {
+        grandTotal += item.subtotal; totalCount += item.qty;
+        tbody.innerHTML += `
+          <tr>
+            <td style="font-weight: 500;">${item.name}</td>
+            <td style="color: #666;">${item.option}</td>
+            <td>$${item.price}</td>
+            <td style="text-align: center; font-weight: 600;">${item.qty}</td>
+            <td style="text-align: right; font-weight: 600;">$${item.subtotal}</td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML += `
+        <tr class="summary-total-row">
+          <td colspan="3">Estimated Total Amount</td>
+          <td style="text-align: center;">${totalCount}</td>
+          <td style="text-align: right; color: var(--primary);">$${grandTotal}</td>
+        </tr>
+      `;
+      badge.innerText = `${totalCount} ITEM(S) SELECTED`;
+    }
+
+    function handleCustomerSubmit(e) {
+      e.preventDefault();
+      const items = Object.values(selectedState);
+      if (items.length === 0) {
+        alert("Please select at least one item."); return;
+      }
+
+      const guestName = document.getElementById('guestName').value;
+      const tel = document.getElementById('tel').value;
+      const pickupDate = document.getElementById('pickupDate').value;
+      const pickupTime = document.getElementById('pickupTime').value;
+      const wording = document.getElementById('wording').value || 'None';
+      const remarks = document.getElementById('remarks').value || 'None';
+
+      const orderId = Math.floor(100000 + Math.random() * 900000);
+      const totalAmount = items.reduce((sum, i) => sum + i.subtotal, 0);
+
+      const submission = {
+        id: orderId, guestName, tel, pickupDate, pickupTime, wording, remarks,
+        items, totalAmount, dateSubmitted: new Date().toLocaleString()
+      };
+
+      submissions.unshift(submission);
+      localStorage.setItem('cake_submissions', JSON.stringify(submissions));
+
+      // PDF Output
+      generatePdf(submission);
+
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('confirmation-screen').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    function generatePdf(sub) {
+      let pdfContent = `
+        <div style="padding: 24px; font-family: sans-serif;">
+          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Order Summary - #${sub.id}</h2>
+          <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Date: ${sub.dateSubmitted}</p>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td>${sub.guestName}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Pickup:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td>${sub.wording}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td>${sub.remarks}</td></tr>
+          </table>
+          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Items</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
+            <thead>
+              <tr style="background: #f4f8f5;"><th>Item</th><th>Option</th><th align="right">Price</th><th align="center">Qty</th><th align="right">Subtotal</th></tr>
+            </thead>
+            <tbody>
+      `;
+      sub.items.forEach(i => {
+        pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
+      });
+      pdfContent += `
+            <tr style="font-weight: bold;"><td colspan="4" align="right">Total:</td><td align="right" style="color: #1b4332;">$${sub.totalAmount}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      html2pdf().set({
+        margin: 0.5,
+        filename: `Cake_Order_${sub.id}_${sub.guestName.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      }).from(pdfContent).save();
+    }
+
+    function resetFormView() {
+      document.getElementById('cake-order-form').reset();
+      selectedState = {};
+      renderSummaryTable();
+      document.getElementById('confirmation-screen').style.display = 'none';
+      document.getElementById('form-container').style.display = 'block';
+    }
+
+    initForm();
+  </script>
+</body>
+</html>
