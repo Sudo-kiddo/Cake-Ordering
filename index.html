@@ -219,11 +219,20 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.2s;
+      transition: background 0.2s, transform 0.1s;
     }
 
     .btn-add-cart:hover {
       background: var(--primary-hover);
+    }
+
+    .btn-add-cart:active {
+      transform: scale(0.95);
+    }
+
+    .btn-add-cart.added-flash {
+      background: var(--accent) !important;
+      color: var(--primary) !important;
     }
 
     /* Floating Bottom Cart Bar */
@@ -366,7 +375,7 @@
       background: #fafafa;
     }
 
-    /* FIXED QUANTITY PICKER IN CART DRAWER */
+    /* CART DRAWER ROW LAYOUT & QUANTITY PICKER */
     .cart-item-row {
       display: flex;
       align-items: center;
@@ -381,7 +390,6 @@
     .cart-item-option { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
     .cart-item-price { font-weight: 700; color: var(--secondary); font-size: 0.95rem; }
 
-    /* Explicit Fix for Cart Quantity Control Box */
     .cart-qty-picker {
       display: flex;
       align-items: center;
@@ -737,7 +745,7 @@
           </div>
           <div class="item-actions">
             ${optionsHtml}
-            <button type="button" class="btn-add-cart" onclick="addToCart('${item.id}')">
+            <button type="button" class="btn-add-cart" id="btn_add_${item.id}" onclick="addToCart('${item.id}')">
               <i class="fa-solid fa-cart-plus"></i> Add
             </button>
           </div>
@@ -770,8 +778,19 @@
         };
       }
 
+      // Visual Feedback on Add Button (Flash Green without opening drawer)
+      const btn = document.getElementById(`btn_add_${itemId}`);
+      if (btn) {
+        btn.classList.add('added-flash');
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> Added`;
+        setTimeout(() => {
+          btn.classList.remove('added-flash');
+          btn.innerHTML = `<i class="fa-solid fa-cart-plus"></i> Add`;
+        }, 800);
+      }
+
       updateCartUI();
-      openCartDrawer();
+      // NOTE: openCartDrawer() is NOT called automatically here so user can keep browsing smoothly!
     }
 
     function updateCartQty(cartKey, delta) {
