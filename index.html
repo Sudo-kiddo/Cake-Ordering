@@ -78,7 +78,6 @@
     .btn-add-cart:hover { background: var(--primary-hover); }
     .btn-add-cart.added-flash { background: var(--accent) !important; color: var(--primary) !important; }
 
-    /* Floating Cart Bar */
     .cart-float-bar {
       position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 860px;
       background: var(--primary); color: white; padding: 14px 20px; border-radius: 40px; box-shadow: 0 8px 24px rgba(27, 67, 50, 0.3);
@@ -90,7 +89,6 @@
     .cart-total-price { font-weight: 700; font-size: 1.15rem; }
     .cart-view-btn { background: rgba(255, 255, 255, 0.2); color: white; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
 
-    /* Cart Drawer – FIXED pointer-events so it never blocks clicks when closed */
     .cart-drawer-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.5); z-index: 2000;
@@ -263,18 +261,20 @@
     </div>
   </div>
 
-  <!-- Confirmation Screen -->
+  <!-- Confirmation Screen (kept as you requested) -->
   <div class="container" id="confirmation-screen">
     <i class="fa-solid fa-circle-check"></i>
     <h2>Order Submitted Successfully!</h2>
-    <p>Thank you for your order. A PDF copy of your summary has been automatically saved to your device.</p>
+    <p>Thank you for your order. A PDF copy of your summary has been downloaded to your device.</p>
     <button type="button" class="btn-checkout" onclick="resetFormView()" style="max-width: 260px; margin: 0 auto;">
       <i class="fa-solid fa-arrow-left"></i> Submit Another Order
     </button>
   </div>
 
   <script>
-    // --- FIREBASE CONFIGURATION (replace with your real values) ---
+    // --- FIREBASE CONFIGURATION ---
+    // ★★★ IMPORTANT: Replace ALL values below with your real Firebase project credentials ★★★
+    // Without real credentials, orders will NOT appear in the admin portal and catalog will NOT sync.
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -367,7 +367,7 @@
       return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
     }
 
-    // Firebase listeners with error protection
+    // Firebase listeners
     try {
       db.ref('cake_catalog').on('value', (snapshot) => {
         const val = snapshot.val();
@@ -632,14 +632,22 @@
         return;
       }
 
-      // ===== CONFIRMATION DIALOG =====
+      // ===== IMPROVED CONFIRMATION DIALOG =====
       const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-      const confirmMsg = `Confirm your order?\n\n` +
-        `Guest: ${guestName}\n` +
-        `Pickup: ${formatDateDisplay(pickupDateVal)} at ${pickupTime}\n` +
-        `Items: ${items.length} line(s)\n` +
-        `Total: $${total}\n\n` +
-        `A PDF will be downloaded and the kitchen will be notified.`;
+      let itemList = items.map(i => 
+        `• ${i.name} (${i.option}) × ${i.qty} = $${i.price * i.qty}`
+      ).join('\n');
+
+      const confirmMsg = 
+`Confirm your order?
+
+Guest: ${guestName}
+Pickup: ${formatDateDisplay(pickupDateVal)} at ${pickupTime}
+
+Items:
+${itemList}
+
+Total: $${total}`;
 
       if (!confirm(confirmMsg)) return;
 
@@ -662,41 +670,52 @@
         lastUpdated: formattedTimestamp
       };
 
+      // Write to Firebase
       db.ref('cake_submissions/' + orderId).set(submission, (error) => {
         if (error) {
-          alert("Submission failed.\nPlease check your internet connection or Firebase configuration and try again.");
+          alert(
+            "❌ Submission failed!\n\n" +
+            "Most common reason: Firebase is still using placeholder credentials (YOUR_API_KEY).\n\n" +
+            "Please open the code and replace the firebaseConfig with your real project values, then try again."
+          );
           console.error(error);
-        } else {
-          // Email
-          try {
-            if (emailSettings.serviceId && emailSettings.templateId && typeof emailjs !== 'undefined') {
-              const templateParams = {
-                to_email: emailSettings.primary,
-                cc_email: emailSettings.cc || '',
-                order_id: submission.id,
-                guest_name: submission.guestName,
-                tel: submission.tel,
-                pickup_date: submission.pickupDate,
-                pickup_time: submission.pickupTime,
-                wording: submission.wording,
-                remarks: submission.remarks,
-                total_amount: submission.totalAmount
-              };
-              emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
-                .then(() => console.log('Email sent'))
-                .catch(err => console.error('Email failed:', err));
-            }
-          } catch (e) { console.warn("Email skipped", e); }
-
-          // PDF
-          try { generatePdf(submission); } catch (pdfErr) { console.warn("PDF error:", pdfErr); }
-
-          // Show success screen
-          document.getElementById('form-container').style.display = 'none';
-          document.getElementById('cart-float-bar').style.display = 'none';
-          document.getElementById('confirmation-screen').style.display = 'block';
-          window.scrollTo(0, 0);
+          return;
         }
+
+        // Success path
+        // 1. Try to send email (optional)
+        try {
+          if (emailSettings.serviceId && emailSettings.templateId && typeof emailjs !== 'undefined') {
+            const templateParams = {
+              to_email: emailSettings.primary,
+              cc_email: emailSettings.cc || '',
+              order_id: submission.id,
+              guest_name: submission.guestName,
+              tel: submission.tel,
+              pickup_date: submission.pickupDate,
+              pickup_time: submission.pickupTime,
+              wording: submission.wording,
+              remarks: submission.remarks,
+              total_amount: submission.totalAmount
+            };
+            emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
+              .then(() => console.log('Email sent'))
+              .catch(err => console.error('Email failed:', err));
+          }
+        } catch (e) { console.warn("Email skipped", e); }
+
+        // 2. Generate & download PDF immediately
+        try {
+          generatePdf(submission);
+        } catch (pdfErr) {
+          console.warn("PDF error:", pdfErr);
+        }
+
+        // 3. Show success confirmation page
+        document.getElementById('form-container').style.display = 'none';
+        document.getElementById('cart-float-bar').style.display = 'none';
+        document.getElementById('confirmation-screen').style.display = 'block';
+        window.scrollTo(0, 0);
       });
     }
 
