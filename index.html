@@ -7,8 +7,12 @@
   <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <!-- html2pdf.js for Client-side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- EmailJS SDK for Instant Client-side Email Dispatch -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
   <!-- Firebase JavaScript Libraries -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -271,16 +275,15 @@
   <script>
     // --- FIREBASE CONFIGURATION (REPLACE WITH YOUR KEYS FROM FIREBASE CONSOLE) ---
     const firebaseConfig = {
-      apiKey: "AIzaSyBNMvnpxdm0ckOvqjKdYg_Ui5I0yo9Og7k",
-      authDomain: "cake-ordering-52b19.firebaseapp.com",
-      databaseURL: "https://cake-ordering-52b19-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "cake-ordering-52b19",
-      storageBucket: "cake-ordering-52b19.firebasestorage.app",
-      messagingSenderId: "884843232096",
-      appId: "1:884843232096:web:c28d51e676d4370f113c05"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
-    // Initialize Firebase
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
@@ -350,7 +353,19 @@
 
     let catalog = DEFAULT_CATALOG;
     let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
+    let emailSettings = {};
+    let submissionsList = [];
     let cart = {};
+
+    // --- FORMAT DATEDDMMYYYY HH:MM (24-HOUR STYLE) ---
+    function formatDateTime24(dateObj) {
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const yyyy = dateObj.getFullYear();
+      const hh = String(dateObj.getHours()).padStart(2, '0');
+      const min = String(dateObj.getMinutes()).padStart(2, '0');
+      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+    }
 
     // --- REALTIME LISTENERS FROM FIREBASE ---
     db.ref('cake_catalog').on('value', (snapshot) => {
@@ -369,6 +384,21 @@
         pickupSettings = val;
         initPickupDateAndTime();
       }
+    });
+
+    db.ref('cake_email').on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        emailSettings = val;
+        if (emailSettings.publicKey) {
+          emailjs.init(emailSettings.publicKey);
+        }
+      }
+    });
+
+    db.ref('cake_submissions').on('value', (snapshot) => {
+      const val = snapshot.val();
+      submissionsList = val ? Object.values(val) : [];
     });
 
     function initPickupDateAndTime() {
@@ -542,6 +572,29 @@
       return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
     }
 
+    // --- GENERATE SEQUENTIAL ORDER ID (YYYYMMDD001, YYYYMMDD002, ...) ---
+    function generateNextOrderId() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const datePrefix = `${yyyy}${mm}${dd}`;
+
+      // Find all existing orders starting with today's date prefix
+      const todayOrders = submissionsList.filter(s => String(s.id).startsWith(datePrefix));
+      let maxSeq = 0;
+      todayOrders.forEach(s => {
+        const seqStr = String(s.id).substring(8);
+        const seqNum = parseInt(seqStr, 10);
+        if (!isNaN(seqNum) && seqNum > maxSeq) {
+          maxSeq = seqNum;
+        }
+      });
+
+      const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
+      return `${datePrefix}${nextSeqStr}`;
+    }
+
     function handleCustomerSubmit(e) {
       e.preventDefault();
       const items = Object.values(cart);
@@ -558,14 +611,19 @@
       const wording = document.getElementById('wording').value || 'None';
       const remarks = document.getElementById('remarks').value || 'None';
 
-      const orderId = Math.floor(100000 + Math.random() * 900000);
+      const orderId = generateNextOrderId();
       const totalAmount = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const formattedTimestamp = formatDateTime24(new Date());
 
       const submission = {
-        id: orderId, guestName, tel, pickupDate, pickupTime, wording, remarks,
+        id: orderId,
+        refNo: "N/A",
+        guestName, tel, pickupDate, pickupTime, wording, remarks,
         items: items.map(i => ({ name: i.name, option: i.option, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
-        totalAmount, dateSubmitted: new Date().toLocaleString(),
-        handlingStaff: "Unassigned", lastUpdated: new Date().toLocaleString()
+        totalAmount,
+        dateSubmitted: formattedTimestamp,
+        handlingStaff: "Unassigned",
+        lastUpdated: formattedTimestamp
       };
 
       // Push to Firebase Realtime Database
@@ -573,6 +631,25 @@
         if (error) {
           alert("Submission failed. Please try again.");
         } else {
+          // Trigger Email Dispatch via EmailJS if configured
+          if (emailSettings.serviceId && emailSettings.templateId) {
+            const templateParams = {
+              to_email: emailSettings.primary,
+              cc_email: emailSettings.cc || '',
+              order_id: submission.id,
+              guest_name: submission.guestName,
+              tel: submission.tel,
+              pickup_date: submission.pickupDate,
+              pickup_time: submission.pickupTime,
+              wording: submission.wording,
+              remarks: submission.remarks,
+              total_amount: submission.totalAmount
+            };
+            emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
+              .then(() => console.log('Instant email sent successfully'))
+              .catch(err => console.error('Email dispatch failed:', err));
+          }
+
           generatePdf(submission);
           document.getElementById('form-container').style.display = 'none';
           document.getElementById('cart-float-bar').style.display = 'none';
@@ -588,7 +665,8 @@
           <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
           <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Created: ${sub.dateSubmitted}</p>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td>${sub.guestName}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Ref No:</td><td>${sub.refNo || 'N/A'}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Guest Name:</td><td>${sub.guestName}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td style="white-space: pre-wrap;">${sub.wording}</td></tr>
