@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cake Ordering Form</title>
-  <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- html2pdf.js for Client-side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
@@ -30,454 +28,91 @@
       --shadow-lg: 0 10px 25px rgba(27, 67, 50, 0.12);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg-cream);
-      color: var(--text-dark);
-      line-height: 1.5;
-      padding-bottom: 100px; /* Leave space for bottom floating cart bar */
-    }
-
-    .container {
-      max-width: 860px;
-      margin: 24px auto;
-      padding: 0 16px;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+    body { background-color: var(--bg-cream); color: var(--text-dark); line-height: 1.5; padding-bottom: 100px; }
+    .container { max-width: 860px; margin: 24px auto; padding: 0 16px; }
 
     header.form-header {
       background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white;
-      padding: 32px 24px;
-      border-radius: var(--radius-lg);
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-lg);
-      text-align: center;
+      color: white; padding: 32px 24px; border-radius: var(--radius-lg); margin-bottom: 24px;
+      box-shadow: var(--shadow-lg); text-align: center;
     }
+    header.form-header h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 6px; }
+    header.form-header p { color: var(--light-green); font-size: 0.95rem; font-weight: 300; }
 
-    header.form-header h1 {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 2.2rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-bottom: 6px;
-    }
+    .card { background: var(--card-bg); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+    .card-title { font-size: 1.15rem; font-weight: 600; color: var(--primary); margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--light-green); padding-bottom: 10px; }
 
-    header.form-header p {
-      color: var(--light-green);
-      font-size: 0.95rem;
-      font-weight: 300;
-      letter-spacing: 0.3px;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: var(--radius-md);
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: var(--primary);
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 2px solid var(--light-green);
-      padding-bottom: 10px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-
-    .full-width {
-      grid-column: span 2;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .form-group label {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .full-width { grid-column: span 2; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.88rem; font-weight: 600; color: var(--text-dark); }
     .form-group input, .form-group textarea, .form-group select {
-      padding: 12px 14px;
-      border: 1.5px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      font-size: 0.95rem;
-      outline: none;
-      transition: all 0.2s ease;
-      background-color: #fafafa;
+      padding: 12px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm);
+      font-size: 0.95rem; outline: none; background-color: #fafafa; transition: all 0.2s ease;
     }
-
     .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-      border-color: var(--secondary);
-      background-color: #fff;
-      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+      border-color: var(--secondary); background-color: #fff; box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
     }
 
-    /* Style for calendar picker */
-    input[type="date"] {
-      cursor: pointer;
-    }
+    .category-accordion { border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 16px; overflow: hidden; background: white; }
+    .accordion-header { background: #f4f8f5; padding: 16px 20px; font-weight: 600; font-size: 1.05rem; color: var(--primary); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+    .accordion-header:hover { background: var(--light-green); }
+    .accordion-content { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+    .accordion-content.collapsed { display: none; }
 
-    .category-accordion {
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      margin-bottom: 16px;
-      overflow: hidden;
-      background: white;
-    }
-
-    .accordion-header {
-      background: #f4f8f5;
-      padding: 16px 20px;
-      font-weight: 600;
-      font-size: 1.05rem;
-      color: var(--primary);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .accordion-header:hover {
-      background: var(--light-green);
-    }
-
-    .accordion-content {
-      padding: 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 12px;
-    }
-
-    .accordion-content.collapsed {
-      display: none;
-    }
-
-    /* Product Item Card */
-    .item-card {
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background: #ffffff;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .item-card.has-in-cart {
-      border-color: var(--accent);
-      background-color: #f7fcf8;
-      box-shadow: 0 0 0 1px var(--accent);
-    }
-
+    .item-card { border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; justify-content: space-between; background: #ffffff; }
+    .item-card.has-in-cart { border-color: var(--accent); background-color: #f7fcf8; box-shadow: 0 0 0 1px var(--accent); }
     .item-name { font-weight: 600; font-size: 0.98rem; color: var(--text-dark); margin-bottom: 4px; }
     .item-price { font-size: 0.9rem; color: var(--secondary); font-weight: 700; margin-bottom: 10px; }
-
-    .item-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .size-select-box {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      font-size: 0.85rem;
-      background: #ffffff;
-      outline: none;
-    }
+    .item-actions { display: flex; gap: 8px; align-items: center; }
+    .size-select-box { flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; background: #ffffff; outline: none; }
 
     .btn-add-cart {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background 0.2s, transform 0.1s;
+      background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px;
+      font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s, transform 0.1s;
     }
+    .btn-add-cart:hover { background: var(--primary-hover); }
+    .btn-add-cart.added-flash { background: var(--accent) !important; color: var(--primary) !important; }
 
-    .btn-add-cart:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-add-cart:active {
-      transform: scale(0.95);
-    }
-
-    .btn-add-cart.added-flash {
-      background: var(--accent) !important;
-      color: var(--primary) !important;
-    }
-
-    /* Floating Bottom Cart Bar */
+    /* Floating Cart Bar */
     .cart-float-bar {
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: calc(100% - 32px);
-      max-width: 860px;
-      background: var(--primary);
-      color: white;
-      padding: 14px 20px;
-      border-radius: 40px;
-      box-shadow: 0 8px 24px rgba(27, 67, 50, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      z-index: 1000;
-      cursor: pointer;
-      transition: transform 0.2s ease, background-color 0.2s ease;
+      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 860px;
+      background: var(--primary); color: white; padding: 14px 20px; border-radius: 40px; box-shadow: 0 8px 24px rgba(27, 67, 50, 0.3);
+      display: flex; align-items: center; justify-content: space-between; z-index: 1000; cursor: pointer;
     }
-
-    .cart-float-bar:hover {
-      background: var(--primary-hover);
-      transform: translateX(-50%) scale(1.01);
-    }
-
-    .cart-float-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .cart-icon-wrapper {
-      position: relative;
-      font-size: 1.3rem;
-    }
-
-    .cart-badge {
-      position: absolute;
-      top: -8px;
-      right: -10px;
-      background: var(--accent);
-      color: var(--primary);
-      font-weight: 800;
-      font-size: 0.75rem;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cart-total-price {
-      font-weight: 700;
-      font-size: 1.15rem;
-    }
-
-    .cart-view-btn {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .cart-float-info { display: flex; align-items: center; gap: 12px; }
+    .cart-icon-wrapper { position: relative; font-size: 1.3rem; }
+    .cart-badge { position: absolute; top: -8px; right: -10px; background: var(--accent); color: var(--primary); font-weight: 800; font-size: 0.75rem; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .cart-total-price { font-weight: 700; font-size: 1.15rem; }
+    .cart-view-btn { background: rgba(255, 255, 255, 0.2); color: white; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
 
     /* Cart Drawer Modal */
-    .cart-drawer-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 2000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
+    .cart-drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+    .cart-drawer-overlay.active { opacity: 1; visibility: visible; }
+    .cart-drawer { position: fixed; top: 0; right: -420px; width: 100%; max-width: 420px; height: 100%; background: white; z-index: 2001; box-shadow: -5px 0 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    .cart-drawer.active { right: 0; }
+    .drawer-header { background: var(--primary); color: white; padding: 20px; display: flex; align-items: center; justify-content: space-between; }
+    .drawer-header h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
+    .drawer-close-btn { background: transparent; border: none; color: white; font-size: 1.4rem; cursor: pointer; }
+    .drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
+    .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); background: #fafafa; }
 
-    .cart-drawer-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .cart-drawer {
-      position: fixed;
-      top: 0; right: -420px;
-      width: 100%; max-width: 420px;
-      height: 100%;
-      background: white;
-      z-index: 2001;
-      box-shadow: -5px 0 25px rgba(0,0,0,0.15);
-      display: flex;
-      flex-direction: column;
-      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .cart-drawer.active {
-      right: 0;
-    }
-
-    .drawer-header {
-      background: var(--primary);
-      color: white;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .drawer-header h3 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .drawer-close-btn {
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 1.4rem;
-      cursor: pointer;
-    }
-
-    .drawer-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .drawer-footer {
-      padding: 20px;
-      border-top: 1px solid var(--border-color);
-      background: #fafafa;
-    }
-
-    /* CART DRAWER ROW LAYOUT & QUANTITY PICKER */
-    .cart-item-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border-color);
-      gap: 12px;
-    }
-
+    .cart-item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border-color); gap: 12px; }
     .cart-item-details { flex: 1; }
     .cart-item-title { font-weight: 600; font-size: 0.95rem; color: var(--text-dark); margin-bottom: 2px; }
     .cart-item-option { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
     .cart-item-price { font-weight: 700; color: var(--secondary); font-size: 0.95rem; }
 
-    .cart-qty-picker {
-      display: flex;
-      align-items: center;
-      border: 1.5px solid var(--primary);
-      border-radius: 6px;
-      overflow: hidden;
-      background: #ffffff;
-      height: 32px;
-    }
+    .cart-qty-picker { display: flex; align-items: center; border: 1.5px solid var(--primary); border-radius: 6px; overflow: hidden; background: #ffffff; height: 32px; }
+    .cart-qty-btn { width: 28px; height: 32px; border: none; background: #f0f4f1; color: var(--primary); font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .cart-qty-num { width: 36px; height: 32px; border: none; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--primary); background: #ffffff; line-height: 32px; }
+    .cart-remove-btn { color: #e63946; background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; }
 
-    .cart-qty-btn {
-      width: 28px;
-      height: 32px;
-      border: none;
-      background: #f0f4f1;
-      color: var(--primary);
-      font-weight: 800;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-    }
+    .btn-checkout { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 30px; font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-checkout:hover { background: var(--primary-hover); }
 
-    .cart-qty-btn:hover {
-      background: var(--light-green);
-    }
-
-    .cart-qty-num {
-      width: 36px;
-      height: 32px;
-      border: none;
-      text-align: center;
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: var(--primary);
-      background: #ffffff;
-      line-height: 32px;
-      outline: none;
-    }
-
-    .cart-remove-btn {
-      color: #e63946;
-      background: transparent;
-      border: none;
-      font-size: 1.1rem;
-      cursor: pointer;
-      padding: 4px;
-      margin-left: 4px;
-    }
-
-    .btn-checkout {
-      background: var(--primary);
-      color: white;
-      border: none;
-      width: 100%;
-      padding: 14px;
-      border-radius: 30px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      transition: background 0.2s;
-    }
-
-    .btn-checkout:hover {
-      background: var(--primary-hover);
-    }
-
-    /* Confirmation View */
-    #confirmation-screen {
-      display: none;
-      text-align: center;
-      padding: 60px 20px;
-      background: white;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg);
-    }
-
+    #confirmation-screen { display: none; text-align: center; padding: 60px 20px; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
     #confirmation-screen i { font-size: 4rem; color: var(--accent); margin-bottom: 20px; }
     #confirmation-screen h2 { font-size: 2rem; color: var(--primary); margin-bottom: 12px; }
     #confirmation-screen p { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto 24px auto; }
@@ -492,14 +127,12 @@
 <body>
 
   <div class="container" id="form-container">
-    
     <header class="form-header">
       <h1>Cake Ordering Form</h1>
       <p>Select your items and complete your details to send your order</p>
     </header>
 
     <form id="cake-order-form" onsubmit="handleCustomerSubmit(event)">
-      
       <!-- Customer Information Card -->
       <div class="card">
         <div class="card-title">
@@ -515,7 +148,6 @@
             <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
           </div>
           
-          <!-- Calendar Pickup Date Input -->
           <div class="form-group">
             <label for="pickupDate">Pickup Date *</label>
             <input type="date" id="pickupDate" required>
@@ -526,10 +158,12 @@
             <select id="pickupTime" required></select>
           </div>
 
+          <!-- MULTILINE TEXTAREA FOR WORDING -->
           <div class="form-group full-width">
             <label for="wording">Wording on Cake</label>
-            <input type="text" id="wording" placeholder="e.g. Happy Birthday John!">
+            <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday John!&#10;Wish you happiness and healthy always!"></textarea>
           </div>
+
           <div class="form-group full-width">
             <label for="remarks">Remarks</label>
             <textarea id="remarks" rows="2" placeholder="Any special requests or notes..."></textarea>
@@ -576,13 +210,11 @@
         </div>
       </div>
 
-      <!-- Submit Order Button -->
       <div style="text-align: center; margin-top: 30px;">
         <button type="submit" class="btn-checkout" style="max-width: 360px; margin: 0 auto;">
           <i class="fa-solid fa-paper-plane"></i> Submit Order
         </button>
       </div>
-
     </form>
   </div>
 
@@ -608,9 +240,7 @@
       <h3><i class="fa-solid fa-basket-shopping"></i> Your Order Cart</h3>
       <button class="drawer-close-btn" onclick="closeCartDrawer()">&times;</button>
     </div>
-    <div class="drawer-body" id="cart-drawer-body">
-      <!-- Items dynamically injected here -->
-    </div>
+    <div class="drawer-body" id="cart-drawer-body"></div>
     <div class="drawer-footer">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
         <span style="font-weight: 600; color: var(--text-muted);">Estimated Total</span>
@@ -700,11 +330,9 @@
     let catalog = JSON.parse(localStorage.getItem('cake_catalog')) || DEFAULT_CATALOG;
     let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
     let submissions = JSON.parse(localStorage.getItem('cake_submissions')) || [];
-    
     let cart = {};
 
     function initForm() {
-      // Set Calendar Minimum Date based on admin leadDays
       const dateInput = document.getElementById('pickupDate');
       const minDate = new Date();
       minDate.setDate(minDate.getDate() + pickupSettings.leadDays);
@@ -717,7 +345,6 @@
       dateInput.min = minDateStr;
       dateInput.value = minDateStr;
 
-      // Pickup Time Slots
       const timeSelect = document.getElementById('pickupTime');
       timeSelect.innerHTML = '';
       pickupSettings.enabledSlots.forEach(slot => {
@@ -726,7 +353,6 @@
         timeSelect.appendChild(opt);
       });
 
-      // Render Items into Categories
       ['whole', 'pastries', 'sweets', 'addons'].forEach(cat => {
         const catContainer = document.getElementById(`cat-${cat}`);
         if (!catContainer) return;
@@ -743,7 +369,7 @@
       const priceText = item.prices.map(p => `$${p.price}`).join(' / ');
       let optionsHtml = item.prices.length > 1 
         ? `<select class="size-select-box" id="select_size_${item.id}">
-             ${item.prices.map((p, idx) => `<option value="${idx}">${p.label} -$${p.price}</option>`).join('')}
+             ${item.prices.map((p, idx) => `<option value="${idx}">${p.label} - $${p.price}</option>`).join('')}
            </select>`
         : `<span style="font-size:0.8rem; color:#666;">${item.prices[0].label}</span>`;
 
@@ -771,19 +397,14 @@
       const item = catalog.find(i => i.id === itemId);
       const sizeSelect = document.getElementById(`select_size_${itemId}`);
       const sizeIdx = sizeSelect ? parseInt(sizeSelect.value) || 0 : 0;
-      
       const cartKey = `${itemId}_${sizeIdx}`;
 
       if (cart[cartKey]) {
         cart[cartKey].qty += 1;
       } else {
         cart[cartKey] = {
-          cartKey: cartKey,
-          itemId: itemId,
-          name: item.name,
-          option: item.prices[sizeIdx].label,
-          price: item.prices[sizeIdx].price,
-          qty: 1
+          cartKey: cartKey, itemId: itemId, name: item.name,
+          option: item.prices[sizeIdx].label, price: item.prices[sizeIdx].price, qty: 1
         };
       }
 
@@ -803,9 +424,7 @@
     function updateCartQty(cartKey, delta) {
       if (!cart[cartKey]) return;
       cart[cartKey].qty += delta;
-      if (cart[cartKey].qty <= 0) {
-        delete cart[cartKey];
-      }
+      if (cart[cartKey].qty <= 0) delete cart[cartKey];
       updateCartUI();
     }
 
@@ -816,8 +435,7 @@
 
     function updateCartUI() {
       const cartItems = Object.values(cart);
-      let totalQty = 0;
-      let totalPrice = 0;
+      let totalQty = 0, totalPrice = 0;
 
       cartItems.forEach(item => {
         totalQty += item.qty;
@@ -843,7 +461,6 @@
           <div style="text-align: center; color: var(--text-muted); margin-top: 60px;">
             <i class="fa-solid fa-basket-shopping" style="font-size: 3rem; margin-bottom: 12px; color: var(--border-color);"></i>
             <p>Your cart is empty.</p>
-            <p style="font-size: 0.85rem; margin-top: 4px;">Choose cakes or pastries above to add them to your order.</p>
           </div>
         `;
       } else {
@@ -861,9 +478,7 @@
                 <div class="cart-qty-num">${item.qty}</div>
                 <button type="button" class="cart-qty-btn" onclick="updateCartQty('${item.cartKey}', 1)">+</button>
               </div>
-              <button type="button" class="cart-remove-btn" onclick="removeFromCart('${item.cartKey}')" title="Remove">
-                <i class="fa-solid fa-trash-can"></i>
-              </button>
+              <button type="button" class="cart-remove-btn" onclick="removeFromCart('${item.cartKey}')"><i class="fa-solid fa-trash-can"></i></button>
             </div>
           `;
         });
@@ -883,25 +498,21 @@
     function formatDateDisplay(yyyyMmDd) {
       if (!yyyyMmDd) return '';
       const parts = yyyyMmDd.split('-');
-      if (parts.length === 3) {
-        return `${parts[2]}/${parts[1]}/${parts[0]}`; // Convert YYYY-MM-DD to DD/MM/YYYY for printing
-      }
-      return yyyyMmDd;
+      return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
     }
 
     function handleCustomerSubmit(e) {
       e.preventDefault();
       const items = Object.values(cart);
       if (items.length === 0) {
-        alert("Your cart is empty! Please add at least one item before submitting.");
+        alert("Your cart is empty! Please add at least one item.");
         openCartDrawer();
         return;
       }
 
       const guestName = document.getElementById('guestName').value;
       const tel = document.getElementById('tel').value;
-      const rawPickupDate = document.getElementById('pickupDate').value; // YYYY-MM-DD
-      const pickupDate = formatDateDisplay(rawPickupDate); // DD/MM/YYYY
+      const pickupDate = formatDateDisplay(document.getElementById('pickupDate').value);
       const pickupTime = document.getElementById('pickupTime').value;
       const wording = document.getElementById('wording').value || 'None';
       const remarks = document.getElementById('remarks').value || 'None';
@@ -912,13 +523,13 @@
       const submission = {
         id: orderId, guestName, tel, pickupDate, pickupTime, wording, remarks,
         items: items.map(i => ({ name: i.name, option: i.option, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
-        totalAmount, dateSubmitted: new Date().toLocaleString()
+        totalAmount, dateSubmitted: new Date().toLocaleString(),
+        handlingStaff: "Unassigned", lastUpdated: new Date().toLocaleString()
       };
 
       submissions.unshift(submission);
       localStorage.setItem('cake_submissions', JSON.stringify(submissions));
 
-      // PDF Output
       generatePdf(submission);
 
       document.getElementById('form-container').style.display = 'none';
@@ -931,13 +542,13 @@
       let pdfContent = `
         <div style="padding: 24px; font-family: sans-serif;">
           <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
-          <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Date: ${sub.dateSubmitted}</p>
+          <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Created: ${sub.dateSubmitted}</p>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
             <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td>${sub.guestName}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td>${sub.wording}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td>${sub.remarks}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td style="white-space: pre-wrap;">${sub.wording}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td style="white-space: pre-wrap;">${sub.remarks}</td></tr>
           </table>
           <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
           <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
