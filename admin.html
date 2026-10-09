@@ -1,726 +1,763 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cake Ordering Form - Staff Admin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- Firebase JavaScript Libraries -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-  <style>
-    :root {
-      --primary: #1b4332;
-      --primary-hover: #143225;
-      --secondary: #2d6a4f;
-      --accent: #52b788;
-      --light-green: #d8f3dc;
-      --bg-cream: #f4f6f4;
-      --card-bg: #ffffff;
-      --text-dark: #2d3748;
-      --text-muted: #718096;
-      --border-color: #e2e8f0;
-      --radius-sm: 8px;
-      --radius-md: 12px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-    body { background-color: var(--bg-cream); color: var(--text-dark); padding-bottom: 60px; }
-
-    nav {
-      background: var(--primary); color: white; padding: 16px 24px; display: flex;
-      align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
-      box-shadow: 0 4px 12px rgba(27,67,50,0.1);
-    }
-    .nav-brand { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-    .nav-tabs { display: flex; gap: 6px; background: rgba(255, 255, 255, 0.1); padding: 4px; border-radius: var(--radius-sm); }
-    .tab-btn {
-      background: transparent; border: none; color: rgba(255, 255, 255, 0.8); padding: 8px 16px;
-      font-size: 0.9rem; font-weight: 500; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px;
-      transition: all 0.2s;
-    }
-    .tab-btn:hover { color: white; background: rgba(255,255,255,0.15); }
-    .tab-btn.active { background: white; color: var(--primary); font-weight: 600; }
-
-    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    .card { background: white; border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); }
-    .card-title {
-      font-size: 1.15rem; font-weight: 600; color: var(--primary); margin-bottom: 18px;
-      border-bottom: 2px solid var(--light-green); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
-    }
-
-    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    .full-width { grid-column: span 2; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.88rem; font-weight: 600; }
-    .form-group input, .form-group textarea, .form-group select { padding: 10px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); outline: none; }
-
-    .btn { padding: 10px 20px; font-weight: 600; border-radius: var(--radius-sm); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #eef2ef; color: var(--primary); border: 1px solid var(--border-color); }
-    .btn-secondary:hover { background: var(--light-green); }
-    .btn-danger { background: #fee2e2; color: #991b1b; }
-
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
-    th { background: #f4f8f5; color: var(--primary); padding: 12px 10px; font-weight: 600; border-bottom: 2px solid var(--light-green); white-space: nowrap; }
-    td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-
-    .time-slot-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 10px; max-height: 380px; overflow-y: auto;
-    }
-    .time-slot-item {
-      display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fafafa; border: 1px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; user-select: none; font-size: 0.88rem;
-    }
-
-    .badge-cat { text-transform: capitalize; font-size: 0.8rem; background: #eef2ef; color: var(--primary); padding: 3px 8px; border-radius: 10px; font-weight: 600; }
-    .staff-badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; }
-    .ref-badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
-
-    /* EDIT ORDER MODAL */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;
-      display: none; align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-box {
-      background: white; border-radius: var(--radius-md); padding: 24px; width: 100%; max-width: 680px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-      max-height: 90vh; overflow-y: auto;
-    }
-
-    @media (max-width: 768px) {
-      nav { flex-direction: column; gap: 12px; }
-      .nav-tabs { width: 100%; overflow-x: auto; }
-      .form-grid { grid-template-columns: 1fr; }
-      .full-width { grid-column: span 1; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Admin Management Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            800: '#1b4332',
+                            700: '#2d6a4f',
+                            500: '#52b788',
+                            100: '#d8f3dc',
+                            50: '#f0fdf4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .gradient-bg { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); }
+    </style>
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen text-slate-800">
 
-  <nav>
-    <div class="nav-brand"><i class="fa-solid fa-gear"></i> Cake Ordering Form Admin</div>
-    <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('submissions')"><i class="fa-solid fa-list-check"></i> Submissions</button>
-      <button class="tab-btn" onclick="switchTab('items')"><i class="fa-solid fa-utensils"></i> Menu Items</button>
-      <button class="tab-btn" onclick="switchTab('email')"><i class="fa-solid fa-envelope"></i> Email Settings</button>
-      <button class="tab-btn" onclick="switchTab('pickup')"><i class="fa-solid fa-clock"></i> Pickup Settings</button>
-      <button class="tab-btn" onclick="switchTab('share')"><i class="fa-solid fa-qrcode"></i> Share / QR Code</button>
-    </div>
-  </nav>
-
-  <div class="container">
-
-    <!-- SUBMISSIONS LOG TAB -->
-    <div id="tab-submissions" class="tab-content active">
-      <div class="card">
-        <div class="card-title">
-          <span>Submitted Orders Log</span>
-          <button class="btn btn-secondary" onclick="clearSubmissions()"><i class="fa-solid fa-trash-can"></i> Clear All</button>
-        </div>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Order #</th>
-                <th>Ref No.</th>
-                <th>Created Time</th>
-                <th>Guest Name</th>
-                <th>Tel</th>
-                <th>Pickup Date & Time</th>
-                <th>Qty</th>
-                <th>Total</th>
-                <th>Handling Staff</th>
-                <th>Last Updated</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="submissions-tbody"></tbody>
-          </table>
-          <div id="no-submissions-msg" style="text-align: center; color: var(--text-muted); padding: 30px; font-style: italic; display: none;">
-            No submitted orders yet. Customer submissions will appear here automatically in real time.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MENU ITEMS MANAGEMENT TAB -->
-    <div id="tab-items" class="tab-content">
-      <div class="card">
-        <div class="card-title">
-          <span id="form-item-title"><i class="fa-solid fa-plus-circle"></i> Add New Menu Item</span>
-        </div>
-        <form id="item-form" onsubmit="handleSaveItem(event)">
-          <input type="hidden" id="edit-item-id">
-          <div class="form-grid">
-            <div class="form-group"><label for="item-name">Item Name *</label><input type="text" id="item-name" required placeholder="e.g. Green Tea Chocolate Cake"></div>
-            <div class="form-group">
-              <label for="item-category">Category *</label>
-              <select id="item-category" required>
-                <option value="whole">Whole & Specialty Cakes</option>
-                <option value="pastries">Pastries, Puffs & Slices</option>
-                <option value="sweets">Cookies, Sweets & Pantry</option>
-                <option value="addons">Add-ons & Accessories</option>
-              </select>
+    <header class="gradient-bg text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-user-gear text-2xl text-forest-100"></i>
+                <h1 class="text-xl font-bold tracking-tight">Staff Admin Management Portal</h1>
             </div>
-            <div class="form-group"><label for="item-price-standard">Slice / Standard Price ($) *</label><input type="number" id="item-price-standard" required min="0" placeholder="60"></div>
-            <div class="form-group"><label for="item-price-large">Whole / Large Price ($) (Optional)</label><input type="number" id="item-price-large" min="0" placeholder="340"></div>
-            <div class="form-group full-width" style="display: flex; gap: 10px; margin-top: 10px;">
-              <button type="submit" class="btn btn-primary" id="btn-save-item"><i class="fa-solid fa-floppy-disk"></i> Save Item</button>
-              <button type="button" class="btn btn-secondary" onclick="resetItemForm()">Cancel</button>
-            </div>
-          </div>
-        </form>
-      </div>
+            <a href="index.html" class="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2">
+                <i class="fa-solid fa-store"></i>
+                <span>Customer Order Page</span>
+            </a>
+        </div>
+    </header>
 
-      <div class="card">
-        <div class="card-title">
-          <span><i class="fa-solid fa-list"></i> Current Menu Catalog</span>
-          <span id="catalog-count-badge" style="font-size: 0.85rem; background: var(--light-green); color: var(--primary); padding: 4px 12px; border-radius: 12px;">0 Items</span>
+    <div class="max-w-7xl mx-auto px-4 mt-6">
+        <div class="flex border-b border-slate-300 space-x-2">
+            <button id="tabBtn-orders" onclick="switchTab('orders')" class="px-5 py-3 font-semibold text-sm border-b-2 border-forest-700 text-forest-800 bg-white rounded-t-lg shadow-sm">
+                <i class="fa-solid fa-list-check mr-2"></i>Orders Dashboard
+            </button>
+            <button id="tabBtn-catalog" onclick="switchTab('catalog')" class="px-5 py-3 font-semibold text-sm text-slate-600 hover:text-forest-800 bg-slate-200 hover:bg-white rounded-t-lg transition">
+                <i class="fa-solid fa-cake-candles mr-2"></i>Catalog Management (45 Items)
+            </button>
+            <button id="tabBtn-email" onclick="switchTab('email')" class="px-5 py-3 font-semibold text-sm text-slate-600 hover:text-forest-800 bg-slate-200 hover:bg-white rounded-t-lg transition">
+                <i class="fa-solid fa-envelope-open-text mr-2"></i>Email Config
+            </button>
+            <button id="tabBtn-pickup" onclick="switchTab('pickup')" class="px-5 py-3 font-semibold text-sm text-slate-600 hover:text-forest-800 bg-slate-200 hover:bg-white rounded-t-lg transition">
+                <i class="fa-solid fa-clock-rotate-left mr-2"></i>Pickup Settings
+            </button>
         </div>
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Item Name</th><th>Category</th><th>Options & Prices</th><th>Action</th></tr></thead>
-            <tbody id="items-tbody"></tbody>
-          </table>
-        </div>
-      </div>
     </div>
 
-    <!-- EMAIL DISPATCH TAB -->
-    <div id="tab-email" class="tab-content">
-      <div class="card">
-        <div class="card-title">Email Notification Settings</div>
-        <form onsubmit="handleSaveEmail(event)">
-          <div class="form-grid">
-            <div class="form-group"><label for="email-primary">Primary Recipient Email *</label><input type="email" id="email-primary" required placeholder="pastry.kitchen@restaurant.com"></div>
-            <div class="form-group"><label for="email-cc">CC Email Addresses (Comma separated)</label><input type="text" id="email-cc" placeholder="manager@restaurant.com"></div>
-            <div class="form-group"><label for="email-publickey">EmailJS Public Key (Optional for instant background emails)</label><input type="text" id="email-publickey" placeholder="e.g. user_123abc"></div>
-            <div class="form-group"><label for="email-serviceid">EmailJS Service ID</label><input type="text" id="email-serviceid" placeholder="e.g. service_gmail"></div>
-            <div class="form-group full-width"><label for="email-templateid">EmailJS Template ID</label><input type="text" id="email-templateid" placeholder="e.g. template_cake_order"></div>
-            <div class="form-group full-width" style="margin-top: 10px;"><button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Email Settings</button></div>
-          </div>
-        </form>
-      </div>
-    </div>
+    <main class="max-w-7xl mx-auto px-4 py-6">
 
-    <!-- PICKUP TIME SLOTS TAB -->
-    <div id="tab-pickup" class="tab-content">
-      <div class="card">
-        <div class="card-title">Pickup Rules & 15-Minute Time Slots</div>
-        <form onsubmit="handleSavePickup(event)">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="pickup-lead">Minimum Advance Notice (Days)</label>
-              <input type="number" id="pickup-lead" value="1" min="0">
-            </div>
-
-            <div class="form-group full-width" style="margin-top: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <label style="font-size: 0.95rem; font-weight: 700; color: var(--primary);">
-                  Available Time Slots (10:00 to 24:00 - 15 min intervals):
-                </label>
-                <div style="display: flex; gap: 8px;">
-                  <button type="button" class="btn btn-secondary" onclick="toggleAllSlots(true)" style="padding: 4px 10px; font-size: 0.8rem;">Select All</button>
-                  <button type="button" class="btn btn-secondary" onclick="toggleAllSlots(false)" style="padding: 4px 10px; font-size: 0.8rem;">Deselect All</button>
+        <!-- TAB 1: ORDERS DASHBOARD -->
+        <section id="tab-orders" class="space-y-6">
+            <!-- Search and Filter Header -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center">
+                <div class="flex flex-1 gap-4 w-full md:w-auto">
+                    <input type="text" id="orderSearchInput" oninput="renderOrdersTable()" placeholder="Search Ref No, Guest Name, Phone..." class="w-full md:w-80 px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-forest-500 outline-none">
+                    <select id="statusFilter" onchange="renderOrdersTable()" class="px-4 py-2 border rounded-lg text-sm bg-white">
+                        <option value="ALL">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
                 </div>
-              </div>
-
-              <div class="time-slot-grid" id="time-slot-container"></div>
+                <div class="text-sm font-semibold text-slate-600" id="orderCountBadge">Loading orders...</div>
             </div>
 
-            <div class="form-group full-width" style="margin-top: 16px;">
-              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Pickup Settings</button>
+            <!-- Orders Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-700 text-xs font-bold uppercase border-b border-slate-200">
+                                <th class="p-4">Ref No</th>
+                                <th class="p-4">Guest Info</th>
+                                <th class="p-4">Pickup Date/Time</th>
+                                <th class="p-4">Total</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Staff</th>
+                                <th class="p-4">Last Updated</th>
+                                <th class="p-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-slate-200 text-sm">
+                            <!-- Orders Rendered Here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-          </div>
-        </form>
-      </div>
+        </section>
+
+        <!-- TAB 2: CATALOG MANAGEMENT -->
+        <section id="tab-catalog" class="hidden space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-slate-800">Cake & Bakery Master Catalog</h2>
+                <button onclick="openCatalogModal()" class="bg-forest-500 hover:bg-forest-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Add New Cake Item
+                </button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-700 text-xs font-bold uppercase border-b border-slate-200">
+                                <th class="p-4">Code</th>
+                                <th class="p-4">Item Name</th>
+                                <th class="p-4">Category</th>
+                                <th class="p-4">Price (HKD)</th>
+                                <th class="p-4">Description</th>
+                                <th class="p-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="catalogTableBody" class="divide-y divide-slate-200 text-sm">
+                            <!-- Catalog Rendered Here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: EMAIL CONFIGURATION -->
+        <section id="tab-email" class="hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-2xl mx-auto">
+                <h2 class="text-xl font-bold text-forest-800 border-b pb-3 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-forest-500"></i> EmailJS Configuration
+                </h2>
+                <!-- Direct Click Handler attached on button to fix clickability -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">EmailJS Public Key</label>
+                        <input type="text" id="emailPublicKey" class="w-full px-4 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-forest-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">EmailJS Service ID</label>
+                        <input type="text" id="emailServiceID" class="w-full px-4 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-forest-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">EmailJS Template ID</label>
+                        <input type="text" id="emailTemplateID" class="w-full px-4 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-forest-500">
+                    </div>
+                    <button type="button" id="saveEmailBtn" onclick="handleSaveEmail()" class="w-full bg-forest-500 hover:bg-forest-700 text-white font-bold py-3 rounded-lg transition mt-4">
+                        Save Email Settings
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: PICKUP SETTINGS -->
+        <section id="tab-pickup" class="hidden">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-2xl mx-auto">
+                <h2 class="text-xl font-bold text-forest-800 border-b pb-3 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-forest-500"></i> Pickup Options Configuration
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Pickup Locations (Comma separated)</label>
+                        <textarea id="pickupLocationsInput" rows="3" class="w-full px-4 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-forest-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Pickup Time Slots (Comma separated)</label>
+                        <textarea id="pickupTimeslotsInput" rows="3" class="w-full px-4 py-2 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-forest-500"></textarea>
+                    </div>
+                    <button type="button" id="savePickupBtn" onclick="handleSavePickup()" class="w-full bg-forest-500 hover:bg-forest-700 text-white font-bold py-3 rounded-lg transition mt-4">
+                        Save Pickup Settings
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="orderModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-bold text-slate-800" id="modalTitle">Edit Order Details</h3>
+                <button onclick="closeOrderModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <form id="orderEditForm" onsubmit="handleSaveOrderEdit(event)" class="space-y-4">
+                <input type="hidden" id="editRefNo">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Ref No</label>
+                        <input type="text" id="editRefDisplay" disabled class="w-full px-3 py-2 bg-slate-100 border rounded-lg text-sm font-mono font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+                        <select id="editStatus" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Guest Name</label>
+                        <input type="text" id="editGuestName" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Contact Phone</label>
+                        <input type="text" id="editContactPhone" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pickup Date</label>
+                        <input type="date" id="editPickupDate" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Pickup Time</label>
+                        <input type="text" id="editPickupTime" required class="w-full px-3 py-2 border rounded-lg text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Cake Wording</label>
+                    <input type="text" id="editCakeWording" class="w-full px-3 py-2 border rounded-lg text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Remarks</label>
+                    <textarea id="editRemarks" rows="2" class="w-full px-3 py-2 border rounded-lg text-sm"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Handling Staff Name</label>
+                    <input type="text" id="editHandlingStaff" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Alex Wong">
+                </div>
+
+                <div class="flex justify-between items-center pt-4 border-t">
+                    <button type="button" onclick="triggerEmailSend()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1">
+                        <i class="fa-solid fa-paper-plane"></i> Send Email Confirmation
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeOrderModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-semibold">Cancel</button>
+                        <button type="submit" class="px-5 py-2 bg-forest-500 hover:bg-forest-700 text-white rounded-lg text-xs font-semibold">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- SHARE & QR CODE TAB -->
-    <div id="tab-share" class="tab-content">
-      <div class="card" style="text-align: center;">
-        <div class="card-title">Shareable Link & Printable QR Code</div>
-        <p style="color: var(--text-muted); margin-bottom: 20px;">This QR Code targets your customer ordering form page (`index.html`).</p>
-        <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 20px;"></div>
-        <div style="max-width: 500px; margin: 0 auto; display: flex; gap: 8px;">
-          <input type="text" id="share-url" readonly style="flex:1; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
-          <button class="btn btn-secondary" onclick="copyUrl()"><i class="fa-solid fa-copy"></i> Copy Link</button>
+    <div id="catalogModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-bold text-slate-800" id="catalogModalTitle">Add/Edit Cake Item</h3>
+                <button onclick="closeCatalogModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold">&times;</button>
+            </div>
+            
+            <div class="space-y-4">
+                <input type="hidden" id="itemEditId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Item Code</label>
+                    <input type="text" id="itemCode" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. C16">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Item Name</label>
+                    <input type="text" id="itemName" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g. Tiramisu Slice">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Category</label>
+                    <select id="itemCategory" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                        <option value="Signature Cakes">Signature Cakes</option>
+                        <option value="Cheesecakes">Cheesecakes</option>
+                        <option value="Tarts & Pies">Tarts & Pies</option>
+                        <option value="Pastries & Bakery">Pastries & Bakery</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Price (HKD)</label>
+                    <input type="number" id="itemPrice" required class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="350">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Description</label>
+                    <textarea id="itemDescription" rows="2" class="w-full px-3 py-2 border rounded-lg text-sm" placeholder="Short description..."></textarea>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4 border-t">
+                    <button type="button" onclick="closeCatalogModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-semibold">Cancel</button>
+                    <button type="button" onclick="handleSaveItem()" class="px-5 py-2 bg-forest-500 hover:bg-forest-700 text-white rounded-lg text-xs font-semibold">Save Item</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
-  </div>
+    <script>
+        const DEFAULT_CATALOG = [
+            { id: "C01", code: "C01", name: "Valrhona Dark Chocolate Truffle Cake", price: 380, category: "Signature Cakes", description: "70% Dark chocolate ganache with moist sponge" },
+            { id: "C02", code: "C02", name: "Japanese Matcha & Red Bean Mousse Cake", price: 360, category: "Signature Cakes", description: "Uji Matcha mousse with sweet Hokkaido red bean" },
+            { id: "C03", code: "C03", name: "Fresh Strawberries Shortcake", price: 340, category: "Signature Cakes", description: "Fluffy sponge layered with fresh Japanese strawberries" },
+            { id: "C04", code: "C04", name: "Mango Passionfruit Chiffon Cake", price: 320, category: "Signature Cakes", description: "Light chiffon cake with tropical mango passionfruit cream" },
+            { id: "C05", code: "C05", name: "Classic Earl Grey Tea Cake", price: 330, category: "Signature Cakes", description: "Infused with aromatic Twinings Earl Grey tea" },
+            { id: "C06", code: "C06", name: "Salted Caramel Macadamia Nut Cake", price: 370, category: "Signature Cakes", description: "Crunchy toasted macadamia with housemade salted caramel" },
+            { id: "C07", code: "C07", name: "Classic Italian Tiramisu Cake", price: 350, category: "Signature Cakes", description: "Mascarpone cream infused with espresso & dark rum" },
+            { id: "C08", code: "C08", name: "Raspberry Lychee Rose Cake", price: 360, category: "Signature Cakes", description: "Floral rose sponge layered with fresh lychee and raspberries" },
+            { id: "C09", code: "C09", name: "Pistachio & Mixed Berry Cake", price: 390, category: "Signature Cakes", description: "Sicilian pistachio cream with fresh wild berries" },
+            { id: "C10", code: "C10", name: "Black Forest Classic Gateau", price: 350, category: "Signature Cakes", description: "Chocolate sponge with Kirsch-soaked cherries" },
+            { id: "C11", code: "C11", name: "Hazelnut Praline Crunchy Cake", price: 380, category: "Signature Cakes", description: "Crispy feuilletine base with gianduja chocolate mousse" },
+            { id: "C12", code: "C12", name: "Lemon Meringue Chiffon Cake", price: 310, category: "Signature Cakes", description: "Tangy curd with torched Swiss meringue top" },
+            { id: "C13", code: "C13", name: "Chestnut Mont Blanc Cake", price: 400, category: "Signature Cakes", description: "French chestnut vermicelli with light vanilla cream" },
+            { id: "C14", code: "C14", name: "Oolong Tea & White Peach Cake", price: 360, category: "Signature Cakes", description: "Taiwanese Oolong tea chiffon with juicy white peach slices" },
+            { id: "C15", code: "C15", name: "Belgian Fudge Chocolate Cake", price: 340, category: "Signature Cakes", description: "Rich, dense chocolate sponge with velvety Belgian fudge" },
 
-  <!-- FULL EDIT ORDER MODAL FOR ADMIN MODIFICATIONS & PDF -->
-  <div class="modal-overlay" id="edit-order-modal">
-    <div class="modal-box">
-      <h3 style="color: var(--primary); margin-bottom: 16px; border-bottom: 2px solid var(--light-green); padding-bottom: 8px;">
-        <i class="fa-solid fa-file-pen"></i> Edit Order Details (#<span id="modal-order-id-label"></span>)
-      </h3>
-      <input type="hidden" id="edit-modal-order-id">
-      
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="edit-ref-no">Reference Number (Staff Input)</label>
-          <input type="text" id="edit-ref-no" placeholder="e.g. REF-88219">
-        </div>
+            { id: "K01", code: "K01", name: "Basque Burnt Cheesecake", price: 280, category: "Cheesecakes", description: "Creamy caramelized top signature cheesecake" },
+            { id: "K02", code: "K02", name: "New York Vanilla Cheesecake", price: 300, category: "Cheesecakes", description: "Traditional dense cheesecake with graham cracker crust" },
+            { id: "K03", code: "K03", name: "Japanese Souffle Cotton Cheesecake", price: 250, category: "Cheesecakes", description: "Ultra light and pillowy soft melt-in-mouth cake" },
+            { id: "K04", code: "K04", name: "Blueberry Swirl Cheesecake", price: 310, category: "Cheesecakes", description: "Classic NY cheesecake swirled with wild blueberry compote" },
+            { id: "K05", code: "K05", name: "Durian D24 Cream Cheesecake", price: 360, category: "Cheesecakes", description: "Rich durian flesh folded into smooth cream cheese" },
+            { id: "K06", code: "K06", name: "Matcha Espresso Double Cheesecake", price: 330, category: "Cheesecakes", description: "Layered unbaked matcha and baked espresso cheesecake" },
+            { id: "K07", code: "K07", name: "Lotus Biscoff Cookie Butter Cheesecake", price: 320, category: "Cheesecakes", description: "Speculoos crust and Biscoff spread swirl" },
+            { id: "K08", code: "K08", name: "Oreo Cookies & Cream Cheesecake", price: 290, category: "Cheesecakes", description: "Crushed Oreo cookies folded into cream cheese" },
+            { id: "K09", code: "K09", name: "Mango Unbaked Cold Cheesecake", price: 300, category: "Cheesecakes", description: "Refreshing unbaked cheesecake topped with fresh mango cubes" },
+            { id: "K10", code: "K10", name: "Yuzu Honey Light Cheesecake", price: 320, category: "Cheesecakes", description: "Japanese Yuzu citrus honey infused cream cheesecake" },
 
-        <div class="form-group">
-          <label for="edit-handling-staff">Handling Staff Name</label>
-          <input type="text" id="edit-handling-staff" placeholder="e.g. Chef Mary">
-        </div>
+            { id: "T01", code: "T01", name: "French Lemon Custard Tart", price: 220, category: "Tarts & Pies", description: "Buttery tart shell filled with tangy zesty lemon curd" },
+            { id: "T02", code: "T02", name: "Fresh Mixed Fruit Custard Tart", price: 260, category: "Tarts & Pies", description: "Seasonal berries, kiwi, and mango over vanilla pastry cream" },
+            { id: "T03", code: "T03", name: "Dark Chocolate Salted Caramel Tart", price: 240, category: "Tarts & Pies", description: "70% dark chocolate ganache over gooey salted caramel" },
+            { id: "T04", code: "T04", name: "Japanese Shine Muscat Grape Tart", price: 350, category: "Tarts & Pies", description: "Premium sweet Shine Muscat grapes over almond cream" },
+            { id: "T05", code: "T05", name: "Kyoto Uji Matcha Tart", price: 250, category: "Tarts & Pies", description: "Rich rich green tea ganache in charcoal pastry shell" },
+            { id: "T06", code: "T06", name: "Classic Pecan Nut Pie", price: 230, category: "Tarts & Pies", description: "Traditional American pecan pie with bourbon vanilla" },
+            { id: "T07", code: "T07", name: "Fresh Strawberry Custard Tart", price: 270, category: "Tarts & Pies", description: "Juicy sweet strawberries over rich custard cream base" },
+            { id: "T08", code: "T08", name: "Caramelized Apple Cinnamon Tart", price: 220, category: "Tarts & Pies", description: "Sauteed Granny Smith apples with cinnamon spice" },
 
-        <div class="form-group">
-          <label for="edit-guest-name">Guest Name</label>
-          <input type="text" id="edit-guest-name" required>
-        </div>
+            { id: "P01", code: "P01", name: "Butter Croissant Box (6 pcs)", price: 120, category: "Pastries & Bakery", description: "French AOP butter flaky golden croissants" },
+            { id: "P02", code: "P02", name: "Pain au Chocolat Box (6 pcs)", price: 135, category: "Pastries & Bakery", description: "Flaky puff pastry with Belgian dark chocolate sticks" },
+            { id: "P03", code: "P03", name: "Vanilla Bean Choux Puff Box (4 pcs)", price: 110, category: "Pastries & Bakery", description: "Crispy craquelin puff filled with real Madagascar vanilla" },
+            { id: "P04", code: "P04", name: "Assorted French Macarons (12 pcs)", price: 180, category: "Pastries & Bakery", description: "12 chef selection seasonal flavor macaron gift box" },
+            { id: "P05", code: "P05", name: "Almond Cream Croissant Box (4 pcs)", price: 130, category: "Pastries & Bakery", description: "Twice-baked croissant topped with toasted sliced almonds" },
+            { id: "P06", code: "P06", name: "Cinnamon Roll Box (4 pcs)", price: 100, category: "Pastries & Bakery", description: "Soft cinnamon brioche rolls with cream cheese frosting" },
+            { id: "P07", code: "P07", name: "Mini Fruit Danish Assortment (8 pcs)", price: 150, category: "Pastries & Bakery", description: "Mini flaky pastries topped with berries and custard" },
+            { id: "P08", code: "P08", name: "Dark Chocolate Brownie Slice Box (4 pcs)", price: 115, category: "Pastries & Bakery", description: "Fudgy Belgian dark chocolate walnut brownies" },
+            { id: "P09", code: "P09", name: "Scones with Clotted Cream & Jam (4 pcs)", price: 120, category: "Pastries & Bakery", description: "Classic English buttery scones with Devonshire cream" },
+            { id: "P10", code: "P10", name: "Pistachio Croissant Roll (3 pcs)", price: 140, category: "Pastries & Bakery", description: "New York style circular croissant filled with pistachio cream" },
+            { id: "P11", code: "P11", name: "Tiramisu Choux Cream Puff (4 pcs)", price: 125, category: "Pastries & Bakery", description: "Crispy choux filled with mascarpone espresso cream" },
+            { id: "P12", code: "P12", name: "Matcha Latte Craquelin Choux (4 pcs)", price: 120, category: "Pastries & Bakery", description: "Green tea craquelin puff with matcha cream" }
+        ];
 
-        <div class="form-group">
-          <label for="edit-tel">Contact Tel</label>
-          <input type="text" id="edit-tel" required>
-        </div>
+        const firebaseConfig = {
+            databaseURL: "https://cakeorderapp-default-rtdb.firebaseio.com/"
+        };
 
-        <div class="form-group">
-          <label for="edit-pickup-date">Pickup Date (DD/MM/YYYY)</label>
-          <input type="text" id="edit-pickup-date" required>
-        </div>
-
-        <div class="form-group">
-          <label for="edit-pickup-time">Pickup Time</label>
-          <input type="text" id="edit-pickup-time" required>
-        </div>
-
-        <div class="form-group full-width">
-          <label for="edit-wording">Wording on Cake</label>
-          <textarea id="edit-wording" rows="2"></textarea>
-        </div>
-
-        <div class="form-group full-width">
-          <label for="edit-remarks">Remarks</label>
-          <textarea id="edit-remarks" rows="2"></textarea>
-        </div>
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-        <button class="btn btn-secondary" onclick="closeEditOrderModal()">Cancel</button>
-        <div style="display: flex; gap: 10px;">
-          <button class="btn btn-secondary" onclick="downloadCurrentModalPdf()"><i class="fa-solid fa-file-pdf"></i> Download Updated PDF</button>
-          <button class="btn btn-primary" onclick="saveOrderModifications()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // --- FIREBASE CONFIGURATION (REPLACE WITH YOUR KEYS FROM FIREBASE CONSOLE) ---
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
-
-    function generate15MinTimeSlots() {
-      const slots = [];
-      for (let hour = 10; hour <= 24; hour++) {
-        const hStr = String(hour).padStart(2, '0');
-        slots.push(`${hStr}:00`);
-        if (hour < 24) {
-          slots.push(`${hStr}:15`); slots.push(`${hStr}:30`); slots.push(`${hStr}:45`);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-      }
-      return slots;
-    }
+        const db = firebase.database();
 
-    const ALL_15MIN_SLOTS = generate15MinTimeSlots();
+        let rawOrders = [];
+        let rawCatalog = [];
+        let activeModalOrder = null;
 
-    let submissions = [];
-    let catalog = [];
-    let emailSettings = { primary: 'pastry.kitchen@restaurant.com', cc: '', publicKey: '', serviceId: '', templateId: '' };
-    let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
-
-    function formatDateTime24(dateObj) {
-      const dd = String(dateObj.getDate()).padStart(2, '0');
-      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const yyyy = dateObj.getFullYear();
-      const hh = String(dateObj.getHours()).padStart(2, '0');
-      const min = String(dateObj.getMinutes()).padStart(2, '0');
-      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
-    }
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
-      if (btn) btn.classList.add('active');
-      document.getElementById(`tab-${tabId}`).classList.add('active');
-
-      if (tabId === 'submissions') renderSubmissions();
-      if (tabId === 'items') renderItems();
-      if (tabId === 'pickup') renderPickupSettings();
-      if (tabId === 'share') renderQr();
-    }
-
-    // --- REALTIME LISTENERS FROM FIREBASE ---
-    db.ref('cake_submissions').on('value', (snapshot) => {
-      const val = snapshot.val();
-      submissions = val ? Object.values(val).reverse() : [];
-      renderSubmissions();
-    });
-
-    db.ref('cake_catalog').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        catalog = Array.isArray(val) ? val : Object.values(val);
-        renderItems();
-      }
-    });
-
-    db.ref('cake_email').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        emailSettings = val;
-        document.getElementById('email-primary').value = emailSettings.primary || '';
-        document.getElementById('email-cc').value = emailSettings.cc || '';
-        document.getElementById('email-publickey').value = emailSettings.publicKey || '';
-        document.getElementById('email-serviceid').value = emailSettings.serviceId || '';
-        document.getElementById('email-templateid').value = emailSettings.templateId || '';
-      }
-    });
-
-    db.ref('cake_pickup').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        pickupSettings = val;
-        renderPickupSettings();
-      }
-    });
-
-    // --- SUBMISSIONS LOGIC ---
-    function renderSubmissions() {
-      const tbody = document.getElementById('submissions-tbody');
-      const emptyMsg = document.getElementById('no-submissions-msg');
-      tbody.innerHTML = '';
-
-      if (submissions.length === 0) {
-        emptyMsg.style.display = 'block';
-        return;
-      }
-      emptyMsg.style.display = 'none';
-
-      submissions.forEach((sub) => {
-        const totalQty = sub.items ? sub.items.reduce((s, i) => s + i.qty, 0) : 0;
-        const staffName = sub.handlingStaff || 'Unassigned';
-        const refNo = sub.refNo || 'N/A';
-        const lastUpdated = sub.lastUpdated || sub.dateSubmitted;
-
-        tbody.innerHTML += `
-          <tr>
-            <td style="font-weight: 600;">#${sub.id}</td>
-            <td><span class="ref-badge">${refNo}</span></td>
-            <td style="font-size:0.8rem; color:#666;">${sub.dateSubmitted}</td>
-            <td>${sub.guestName}</td>
-            <td>${sub.tel}</td>
-            <td>${sub.pickupDate} ${sub.pickupTime}</td>
-            <td>${totalQty}</td>
-            <td style="font-weight: 600; color: var(--primary);">$${sub.totalAmount}</td>
-            <td><span class="staff-badge"><i class="fa-solid fa-user"></i> ${staffName}</span></td>
-            <td style="font-size:0.8rem; color:#666;">${lastUpdated}</td>
-            <td>
-              <button class="btn btn-secondary" onclick="openEditOrderModal('${sub.id}')" style="padding: 4px 8px; font-size: 0.8rem;">
-                <i class="fa-solid fa-pen"></i> Edit / Process
-              </button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function openEditOrderModal(orderId) {
-      const sub = submissions.find(s => String(s.id) === String(orderId));
-      if (!sub) return;
-
-      document.getElementById('edit-modal-order-id').value = sub.id;
-      document.getElementById('modal-order-id-label').innerText = sub.id;
-      document.getElementById('edit-ref-no').value = sub.refNo || '';
-      document.getElementById('edit-handling-staff').value = sub.handlingStaff !== 'Unassigned' ? sub.handlingStaff : '';
-      document.getElementById('edit-guest-name').value = sub.guestName || '';
-      document.getElementById('edit-tel').value = sub.tel || '';
-      document.getElementById('edit-pickup-date').value = sub.pickupDate || '';
-      document.getElementById('edit-pickup-time').value = sub.pickupTime || '';
-      document.getElementById('edit-wording').value = sub.wording || '';
-      document.getElementById('edit-remarks').value = sub.remarks || '';
-
-      document.getElementById('edit-order-modal').classList.add('active');
-    }
-
-    function closeEditOrderModal() {
-      document.getElementById('edit-order-modal').classList.remove('active');
-    }
-
-    function saveOrderModifications() {
-      const orderId = document.getElementById('edit-modal-order-id').value;
-      const refNo = document.getElementById('edit-ref-no').value.trim() || 'N/A';
-      const handlingStaff = document.getElementById('edit-handling-staff').value.trim() || 'Unassigned';
-      const guestName = document.getElementById('edit-guest-name').value.trim();
-      const tel = document.getElementById('edit-tel').value.trim();
-      const pickupDate = document.getElementById('edit-pickup-date').value.trim();
-      const pickupTime = document.getElementById('edit-pickup-time').value.trim();
-      const wording = document.getElementById('edit-wording').value;
-      const remarks = document.getElementById('edit-remarks').value;
-      const lastUpdated = formatDateTime24(new Date());
-
-      db.ref('cake_submissions/' + orderId).update({
-        refNo, handlingStaff, guestName, tel, pickupDate, pickupTime, wording, remarks, lastUpdated
-      }, (error) => {
-        if (!error) {
-          alert("Order details updated successfully!");
-          closeEditOrderModal();
-        } else {
-          alert("Failed to update order.");
+        // Switch Tabs Function
+        function switchTab(tabName) {
+            ['orders', 'catalog', 'email', 'pickup'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`tabBtn-${t}`);
+                if (t === tabName) {
+                    el.classList.remove('hidden');
+                    btn.className = "px-5 py-3 font-semibold text-sm border-b-2 border-forest-700 text-forest-800 bg-white rounded-t-lg shadow-sm";
+                } else {
+                    el.classList.add('hidden');
+                    btn.className = "px-5 py-3 font-semibold text-sm text-slate-600 hover:text-forest-800 bg-slate-200 hover:bg-white rounded-t-lg transition";
+                }
+            });
         }
-      });
-    }
 
-    function downloadCurrentModalPdf() {
-      const orderId = document.getElementById('edit-modal-order-id').value;
-      const sub = submissions.find(s => String(s.id) === String(orderId));
-      if (!sub) return;
+        // Initialize Firebase listeners
+        function initAdminData() {
+            // Live Orders listener
+            db.ref('orders').on('value', snapshot => {
+                const data = snapshot.val();
+                rawOrders = data ? Object.values(data) : [];
+                renderOrdersTable();
+            });
 
-      // Construct object with active modal inputs
-      const tempSub = {
-        ...sub,
-        refNo: document.getElementById('edit-ref-no').value.trim() || 'N/A',
-        handlingStaff: document.getElementById('edit-handling-staff').value.trim() || 'Unassigned',
-        guestName: document.getElementById('edit-guest-name').value.trim(),
-        tel: document.getElementById('edit-tel').value.trim(),
-        pickupDate: document.getElementById('edit-pickup-date').value.trim(),
-        pickupTime: document.getElementById('edit-pickup-time').value.trim(),
-        wording: document.getElementById('edit-wording').value,
-        remarks: document.getElementById('edit-remarks').value
-      };
+            // Live Catalog listener & auto-seeding
+            db.ref('cake_catalog').on('value', snapshot => {
+                const data = snapshot.val();
+                if (data && Object.keys(data).length >= 45) {
+                    rawCatalog = Object.keys(data).map(k => ({ id: k, ...data[k] }));
+                } else {
+                    const updates = {};
+                    DEFAULT_CATALOG.forEach(item => {
+                        updates['cake_catalog/' + item.id] = item;
+                    });
+                    db.ref().update(updates);
+                    rawCatalog = [...DEFAULT_CATALOG];
+                }
+                renderCatalogTable();
+            });
 
-      downloadPdfByObject(tempSub);
-    }
+            // Load Email Config
+            db.ref('settings/email').once('value').then(snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('emailPublicKey').value = data.publicKey || '';
+                    document.getElementById('emailServiceID').value = data.serviceID || '';
+                    document.getElementById('emailTemplateID').value = data.templateID || '';
+                }
+            });
 
-    function downloadPdfByObject(sub) {
-      let pdfContent = `
-        <div style="padding: 24px; font-family: sans-serif;">
-          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
-          <p style="color: #666; font-size: 12px; margin-bottom: 12px;">Submitted: ${sub.dateSubmitted} | Processed by: ${sub.handlingStaff || 'Unassigned'}</p>
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Ref No:</td><td>${sub.refNo || 'N/A'}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Guest Name:</td><td>${sub.guestName}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td style="white-space: pre-wrap;">${sub.wording}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td style="white-space: pre-wrap;">${sub.remarks}</td></tr>
-          </table>
-          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
-            <thead>
-              <tr style="background: #f4f8f5;"><th>Item</th><th>Option</th><th align="right">Price</th><th align="center">Qty</th><th align="right">Subtotal</th></tr>
-            </thead>
-            <tbody>
-      `;
-      if (sub.items) {
-        sub.items.forEach(i => {
-          pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
-        });
-      }
-      pdfContent += `
-            <tr style="font-weight: bold;"><td colspan="4" align="right">Total:</td><td align="right" style="color: #1b4332;">$${sub.totalAmount}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      `;
+            // Load Pickup Settings
+            db.ref('settings/pickup').once('value').then(snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('pickupLocationsInput').value = (data.locations || []).join(', ');
+                    document.getElementById('pickupTimeslotsInput').value = (data.timeslots || []).join(', ');
+                } else {
+                    document.getElementById('pickupLocationsInput').value = "Central Flagship Store, Kowloon TST Branch, Shatin Hotel Lobby";
+                    document.getElementById('pickupTimeslotsInput').value = "11:00 AM - 01:00 PM, 01:00 PM - 04:00 PM, 04:00 PM - 07:00 PM";
+                }
+            });
+        }
 
-      html2pdf().set({
-        margin: 0.5,
-        filename: `Cake_Order_${sub.id}_${sub.guestName.replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      }).from(pdfContent).save();
-    }
+        // Render Orders Table
+        function renderOrdersTable() {
+            const search = document.getElementById('orderSearchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const tbody = document.getElementById('ordersTableBody');
 
-    function clearSubmissions() {
-      if (confirm("Are you sure you want to clear all submitted orders from Firebase?")) {
-        db.ref('cake_submissions').remove();
-      }
-    }
+            const filtered = rawOrders.filter(o => {
+                const matchesSearch = (o.refNo && o.refNo.toLowerCase().includes(search)) ||
+                    (o.guestName && o.guestName.toLowerCase().includes(search)) ||
+                    (o.contactPhone && o.contactPhone.toLowerCase().includes(search));
+                const matchesStatus = status === 'ALL' || o.status === status;
+                return matchesSearch && matchesStatus;
+            }).sort((a,b) => (b.refNo > a.refNo ? 1 : -1));
 
-    // --- ITEM CATALOG LOGIC ---
-    function renderItems() {
-      const tbody = document.getElementById('items-tbody');
-      const badge = document.getElementById('catalog-count-badge');
-      tbody.innerHTML = '';
-      badge.innerText = `${catalog.length} Items`;
+            document.getElementById('orderCountBadge').innerText = `Total: ${filtered.length} Orders`;
 
-      catalog.forEach(item => {
-        const priceStr = item.prices.map(p => `${p.label}: $${p.price}`).join(' | ');
-        tbody.innerHTML += `
-          <tr>
-            <td style="font-weight: 600;">${item.name}</td>
-            <td><span class="badge-cat">${item.cat}</span></td>
-            <td>${priceStr}</td>
-            <td>
-              <button class="btn btn-secondary" onclick="editItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Edit</button>
-              <button class="btn btn-danger" onclick="deleteItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Delete</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400">No matching orders found.</td></tr>`;
+                return;
+            }
 
-    function handleSaveItem(e) {
-      e.preventDefault();
-      const editId = document.getElementById('edit-item-id').value;
-      const name = document.getElementById('item-name').value;
-      const cat = document.getElementById('item-category').value;
-      const stdPrice = parseFloat(document.getElementById('item-price-standard').value) || 0;
-      const lgPriceInput = document.getElementById('item-price-large').value;
+            tbody.innerHTML = filtered.map(o => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 font-mono font-bold text-forest-800">${o.refNo}</td>
+                    <td class="p-4">
+                        <div class="font-bold text-slate-800">${o.guestName}</div>
+                        <div class="text-xs text-slate-500">${o.contactPhone}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="font-semibold">${o.pickupDate}</div>
+                        <div class="text-xs text-slate-500">${o.pickupTime}</div>
+                    </td>
+                    <td class="p-4 font-bold text-slate-800">$${(o.totalAmount || 0).toLocaleString()} HKD</td>
+                    <td class="p-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${o.status || 'Pending'}</span>
+                    </td>
+                    <td class="p-4 text-xs font-medium text-slate-600">${o.handlingStaff || 'Unassigned'}</td>
+                    <td class="p-4 text-xs text-slate-500">${o.updatedAt || o.createdAt || '-'}</td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="openOrderModal('${o.refNo}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-lg text-xs font-semibold">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="downloadOrderPDF('${o.refNo}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-lg text-xs font-semibold">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-      const prices = [{ label: "Slice / Standard", price: stdPrice }];
-      if (lgPriceInput !== "") {
-        prices.push({ label: "Whole Cake", price: parseFloat(lgPriceInput) || 0 });
-      }
+        function getStatusStyle(s) {
+            switch(s) {
+                case 'Confirmed': return 'bg-blue-100 text-blue-800';
+                case 'Completed': return 'bg-green-100 text-green-800';
+                case 'Cancelled': return 'bg-red-100 text-red-800';
+                default: return 'bg-amber-100 text-amber-800';
+            }
+        }
 
-      if (editId) {
-        const item = catalog.find(i => i.id === editId);
-        if (item) { item.name = name; item.cat = cat; item.prices = prices; }
-      } else {
-        catalog.push({ id: "item_" + Date.now(), name, cat, prices });
-      }
+        // Render Catalog Table
+        function renderCatalogTable() {
+            const tbody = document.getElementById('catalogTableBody');
+            if (rawCatalog.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400">No catalog items available.</td></tr>`;
+                return;
+            }
 
-      db.ref('cake_catalog').set(catalog);
-      resetItemForm();
-      alert("Menu catalog updated on cloud!");
-    }
+            tbody.innerHTML = rawCatalog.map(item => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 font-mono font-bold text-forest-800">${item.code}</td>
+                    <td class="p-4 font-bold text-slate-800">${item.name}</td>
+                    <td class="p-4 text-xs font-semibold text-slate-600">${item.category}</td>
+                    <td class="p-4 font-bold text-slate-800">$${item.price} HKD</td>
+                    <td class="p-4 text-xs text-slate-500 max-w-xs truncate">${item.description || '-'}</td>
+                    <td class="p-4 text-center space-x-2">
+                        <button onclick="openCatalogModal('${item.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-lg text-xs">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button onclick="deleteCatalogItem('${item.id}')" class="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg text-xs">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-    function editItem(id) {
-      const item = catalog.find(i => i.id === id);
-      if (!item) return;
+        // Save Email Settings Function
+        async function handleSaveEmail() {
+            const pubKey = document.getElementById('emailPublicKey').value.trim();
+            const serviceID = document.getElementById('emailServiceID').value.trim();
+            const templateID = document.getElementById('emailTemplateID').value.trim();
 
-      document.getElementById('edit-item-id').value = item.id;
-      document.getElementById('item-name').value = item.name;
-      document.getElementById('item-category').value = item.cat;
-      document.getElementById('item-price-standard').value = item.prices[0] ? item.prices[0].price : 0;
-      document.getElementById('item-price-large').value = item.prices[1] ? item.prices[1].price : "";
-      
-      document.getElementById('form-item-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Menu Item: ${item.name}`;
-      document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Item';
-      window.scrollTo(0, 0);
-    }
+            try {
+                await db.ref('settings/email').set({
+                    publicKey: pubKey,
+                    serviceID: serviceID,
+                    templateID: templateID
+                });
+                alert("EmailJS configuration saved successfully!");
+            } catch (err) {
+                console.error("Save email error:", err);
+                alert("Failed to save EmailJS settings.");
+            }
+        }
 
-    function deleteItem(id) {
-      if (confirm("Are you sure you want to delete this item from the catalog?")) {
-        catalog = catalog.filter(i => i.id !== id);
-        db.ref('cake_catalog').set(catalog);
-      }
-    }
+        // Save Pickup Settings Function
+        async function handleSavePickup() {
+            const locStr = document.getElementById('pickupLocationsInput').value;
+            const timeStr = document.getElementById('pickupTimeslotsInput').value;
 
-    function resetItemForm() {
-      document.getElementById('item-form').reset();
-      document.getElementById('edit-item-id').value = '';
-      document.getElementById('form-item-title').innerHTML = '<i class="fa-solid fa-plus-circle"></i> Add New Menu Item';
-      document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Item';
-    }
+            const locations = locStr.split(',').map(s => s.trim()).filter(Boolean);
+            const timeslots = timeStr.split(',').map(s => s.trim()).filter(Boolean);
 
-    // --- PICKUP TIME SLOTS LOGIC ---
-    function renderPickupSettings() {
-      document.getElementById('pickup-lead').value = pickupSettings.leadDays || 1;
-      const container = document.getElementById('time-slot-container');
-      container.innerHTML = '';
+            try {
+                await db.ref('settings/pickup').set({
+                    locations: locations,
+                    timeslots: timeslots
+                });
+                alert("Pickup locations and timeslots updated successfully!");
+            } catch (err) {
+                console.error("Save pickup error:", err);
+                alert("Failed to save pickup settings.");
+            }
+        }
 
-      const enabled = pickupSettings.enabledSlots || ALL_15MIN_SLOTS;
-      ALL_15MIN_SLOTS.forEach(slot => {
-        const checked = enabled.includes(slot) ? 'checked' : '';
-        container.innerHTML += `
-          <label class="time-slot-item">
-            <input type="checkbox" value="${slot}" ${checked}>
-            <span>${slot}</span>
-          </label>
-        `;
-      });
-    }
+        // Save Catalog Item Function
+        async function handleSaveItem() {
+            const id = document.getElementById('itemEditId').value || document.getElementById('itemCode').value.trim();
+            const code = document.getElementById('itemCode').value.trim();
+            const name = document.getElementById('itemName').value.trim();
+            const category = document.getElementById('itemCategory').value;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            const description = document.getElementById('itemDescription').value.trim();
 
-    function toggleAllSlots(select) {
-      document.querySelectorAll('#time-slot-container input[type="checkbox"]').forEach(cb => {
-        cb.checked = select;
-      });
-    }
+            if (!code || !name) {
+                alert("Please enter both Item Code and Item Name.");
+                return;
+            }
 
-    function handleSavePickup(e) {
-      e.preventDefault();
-      const leadDays = parseInt(document.getElementById('pickup-lead').value) || 0;
-      const checkedBoxes = document.querySelectorAll('#time-slot-container input[type="checkbox"]:checked');
-      const enabledSlots = Array.from(checkedBoxes).map(cb => cb.value);
+            const itemObj = { id, code, name, category, price, description };
 
-      db.ref('cake_pickup').set({ leadDays, enabledSlots }, (err) => {
-        if (!err) alert("Pickup rules updated on cloud!");
-      });
-    }
+            try {
+                await db.ref('cake_catalog/' + id).set(itemObj);
+                alert("Catalog item saved successfully!");
+                closeCatalogModal();
+            } catch (err) {
+                console.error("Save item error:", err);
+                alert("Failed to save catalog item.");
+            }
+        }
 
-    // --- EMAIL LOGIC ---
-    function handleSaveEmail(e) {
-      e.preventDefault();
-      const primary = document.getElementById('email-primary').value;
-      const cc = document.getElementById('email-cc').value;
-      const publicKey = document.getElementById('email-publickey').value;
-      const serviceId = document.getElementById('email-serviceid').value;
-      const templateId = document.getElementById('email-templateid').value;
+        // Delete Catalog Item Function
+        async function deleteCatalogItem(id) {
+            if (confirm("Are you sure you want to delete this cake item?")) {
+                try {
+                    await db.ref('cake_catalog/' + id).remove();
+                    alert("Catalog item deleted.");
+                } catch (e) {
+                    alert("Failed to delete item.");
+                }
+            }
+        }
 
-      db.ref('cake_email').set({ primary, cc, publicKey, serviceId, templateId }, (err) => {
-        if (!err) alert("Email settings updated on cloud!");
-      });
-    }
+        // Modal Controls for Catalog
+        function openCatalogModal(id = null) {
+            if (id) {
+                const item = rawCatalog.find(c => c.id === id);
+                if (item) {
+                    document.getElementById('itemEditId').value = item.id;
+                    document.getElementById('itemCode').value = item.code;
+                    document.getElementById('itemName').value = item.name;
+                    document.getElementById('itemCategory').value = item.category;
+                    document.getElementById('itemPrice').value = item.price;
+                    document.getElementById('itemDescription').value = item.description || '';
+                    document.getElementById('catalogModalTitle').innerText = "Edit Cake Item";
+                }
+            } else {
+                document.getElementById('itemEditId').value = '';
+                document.getElementById('itemCode').value = '';
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemCategory').value = 'Signature Cakes';
+                document.getElementById('itemPrice').value = '';
+                document.getElementById('itemDescription').value = '';
+                document.getElementById('catalogModalTitle').innerText = "Add New Cake Item";
+            }
+            document.getElementById('catalogModal').classList.remove('hidden');
+            document.getElementById('catalogModal').classList.add('flex');
+        }
 
-    // --- SHARE & QR CODE LOGIC ---
-    function renderQr() {
-      const shareInput = document.getElementById('share-url');
-      const currentOrigin = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-      const customerFormUrl = `${currentOrigin}/index.html`;
+        function closeCatalogModal() {
+            document.getElementById('catalogModal').classList.add('hidden');
+            document.getElementById('catalogModal').classList.remove('flex');
+        }
 
-      shareInput.value = customerFormUrl;
+        // Modal Controls for Order Edit
+        function openOrderModal(refNo) {
+            const order = rawOrders.find(o => o.refNo === refNo);
+            if (!order) return;
+            activeModalOrder = order;
 
-      const qrContainer = document.getElementById('qrcode');
-      qrContainer.innerHTML = '';
-      new QRCode(qrContainer, {
-        text: customerFormUrl,
-        width: 180,
-        height: 180,
-        colorDark: "#1b4332",
-        colorLight: "#ffffff"
-      });
-    }
+            document.getElementById('editRefNo').value = order.refNo;
+            document.getElementById('editRefDisplay').value = order.refNo;
+            document.getElementById('editStatus').value = order.status || 'Pending';
+            document.getElementById('editGuestName').value = order.guestName || '';
+            document.getElementById('editContactPhone').value = order.contactPhone || '';
+            document.getElementById('editPickupDate').value = order.pickupDate || '';
+            document.getElementById('editPickupTime').value = order.pickupTime || '';
+            document.getElementById('editCakeWording').value = order.cakeWording || '';
+            document.getElementById('editRemarks').value = order.remarks || '';
+            document.getElementById('editHandlingStaff').value = order.handlingStaff || '';
 
-    function copyUrl() {
-      const shareInput = document.getElementById('share-url');
-      shareInput.select();
-      document.execCommand('copy');
-      alert("Customer form link copied to clipboard!");
-    }
-  </script>
+            document.getElementById('orderModal').classList.remove('hidden');
+            document.getElementById('orderModal').classList.add('flex');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+            document.getElementById('orderModal').classList.remove('flex');
+            activeModalOrder = null;
+        }
+
+        // Save Order Edit Form
+        async function handleSaveOrderEdit(e) {
+            e.preventDefault();
+            const refNo = document.getElementById('editRefNo').value;
+            const now = new Date();
+            const formattedTimestamp = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            const updates = {
+                status: document.getElementById('editStatus').value,
+                guestName: document.getElementById('editGuestName').value.trim(),
+                contactPhone: document.getElementById('editContactPhone').value.trim(),
+                pickupDate: document.getElementById('editPickupDate').value,
+                pickupTime: document.getElementById('editPickupTime').value,
+                cakeWording: document.getElementById('editCakeWording').value.trim(),
+                remarks: document.getElementById('editRemarks').value.trim(),
+                handlingStaff: document.getElementById('editHandlingStaff').value.trim(),
+                updatedAt: formattedTimestamp
+            };
+
+            try {
+                await db.ref('orders/' + refNo).update(updates);
+                alert("Order details updated successfully!");
+                closeOrderModal();
+            } catch (err) {
+                console.error("Order edit error:", err);
+                alert("Failed to update order details.");
+            }
+        }
+
+        // Trigger EmailJS Email
+        async function triggerEmailSend() {
+            if (!activeModalOrder) return;
+
+            const emailSnap = await db.ref('settings/email').once('value');
+            const emailConfig = emailSnap.val();
+
+            if (!emailConfig || !emailConfig.publicKey || !emailConfig.serviceID || !emailConfig.templateID) {
+                alert("EmailJS configuration is missing. Please configure Public Key, Service ID, and Template ID in Email Config tab first.");
+                return;
+            }
+
+            emailjs.init(emailConfig.publicKey);
+
+            const templateParams = {
+                to_name: activeModalOrder.guestName,
+                to_email: activeModalOrder.contactEmail,
+                ref_no: activeModalOrder.refNo,
+                pickup_date: activeModalOrder.pickupDate,
+                pickup_time: activeModalOrder.pickupTime,
+                total_amount: activeModalOrder.totalAmount,
+                status: document.getElementById('editStatus').value
+            };
+
+            try {
+                await emailjs.send(emailConfig.serviceID, emailConfig.templateID, templateParams);
+                alert(`Confirmation email sent successfully to ${activeModalOrder.contactEmail}`);
+            } catch (e) {
+                console.error("Email error:", e);
+                alert("Failed to send email via EmailJS.");
+            }
+        }
+
+        // Download Order PDF
+        function downloadOrderPDF(refNo) {
+            const order = rawOrders.find(o => o.refNo === refNo);
+            if (!order) return;
+
+            const element = document.createElement('div');
+            element.style.padding = '30px';
+            element.innerHTML = `
+                <div style="font-family: Arial, sans-serif; color: #333;">
+                    <h2 style="color: #1b4332; border-bottom: 2px solid #1b4332; padding-bottom: 8px;">Order Confirmation Summary</h2>
+                    <p><strong>Ref No:</strong> ${order.refNo}</p>
+                    <p><strong>Guest Name:</strong> ${order.guestName}</p>
+                    <p><strong>Contact Phone:</strong> ${order.contactPhone}</p>
+                    <p><strong>Pickup Location:</strong> ${order.pickupLocation || 'N/A'}</p>
+                    <p><strong>Pickup Date/Time:</strong> ${order.pickupDate} (${order.pickupTime})</p>
+                    <p><strong>Cake Wording:</strong> ${order.cakeWording || 'None'}</p>
+                    <p><strong>Remarks:</strong> ${order.remarks || 'None'}</p>
+                    <p><strong>Status:</strong> ${order.status}</p>
+                    <h3 style="margin-top: 20px; border-bottom: 1px solid #ccc;">Items Ordered</h3>
+                    <ul>
+                        ${(order.items || []).map(i => `<li>${i.name} (x${i.quantity}) - $${i.subtotal} HKD</li>`).join('')}
+                    </ul>
+                    <h3 style="text-align: right; color: #1b4332;">Total: $${(order.totalAmount || 0).toLocaleString()} HKD</h3>
+                </div>
+            `;
+
+            const opt = {
+                margin:       0.5,
+                filename:     `Order_${order.refNo}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save();
+        }
+
+        window.onload = function() {
+            initAdminData();
+        };
+    </script>
 </body>
 </html>
