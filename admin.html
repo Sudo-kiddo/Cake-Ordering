@@ -33,16 +33,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
     body { background-color: var(--bg-cream); color: var(--text-dark); padding-bottom: 60px; }
 
-    /* PASSCODE LOCK SCREEN */
-    #lock-screen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary);
-      color: white; display: flex; align-items: center; justify-content: center; z-index: 9999;
-    }
-    .lock-card {
-      background: white; color: var(--text-dark); padding: 36px 28px; border-radius: var(--radius-md);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; max-width: 360px; width: 100%;
-    }
-
     nav {
       background: var(--primary); color: white; padding: 16px 24px; display: flex;
       align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100;
@@ -107,7 +97,6 @@
       max-height: 90vh; overflow-y: auto;
     }
 
-    /* PREVIEW FRAME STYLES */
     .preview-frame-wrapper {
       width: 100%; max-width: 860px; height: 80vh; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden;
     }
@@ -125,29 +114,15 @@
 </head>
 <body>
 
-  <!-- PASSCODE PROTECTION LOCK SCREEN -->
-  <div id="lock-screen">
-    <div class="lock-card">
-      <i class="fa-solid fa-lock" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 12px;"></i>
-      <h2 style="color: var(--primary); margin-bottom: 6px;">Staff Portal Access</h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Please enter the passcode to access the admin portal.</p>
-      <form onsubmit="handlePasscodeCheck(event)">
-        <input type="password" id="passcode-input" placeholder="Enter Passcode" required style="width: 100%; padding: 12px; border: 1.5px solid var(--border-color); border-radius: 8px; text-align: center; font-size: 1.2rem; margin-bottom: 16px; outline: none;">
-        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Unlock Portal</button>
-      </form>
-      <p id="lock-error" style="color: #e63946; font-size: 0.8rem; margin-top: 10px; display: none;">Invalid Passcode. Default is 1234.</p>
-    </div>
-  </div>
-
   <nav>
     <div class="nav-brand"><i class="fa-solid fa-gear"></i> Cake Ordering Form Admin</div>
     <div class="nav-tabs">
-      <button class="tab-btn active" id="tab-btn-submissions" onclick="switchTab('submissions')"><i class="fa-solid fa-list-check"></i> Submissions</button>
-      <button class="tab-btn" id="tab-btn-items" onclick="switchTab('items')"><i class="fa-solid fa-utensils"></i> Menu Items</button>
-      <button class="tab-btn" id="tab-btn-email" onclick="switchTab('email')"><i class="fa-solid fa-envelope"></i> Email Settings</button>
-      <button class="tab-btn" id="tab-btn-pickup" onclick="switchTab('pickup')"><i class="fa-solid fa-clock"></i> Pickup Settings</button>
-      <button class="tab-btn" id="tab-btn-preview" onclick="switchTab('preview')"><i class="fa-solid fa-eye"></i> Form Preview</button>
-      <button class="tab-btn" id="tab-btn-share" onclick="switchTab('share')"><i class="fa-solid fa-qrcode"></i> Share / QR Code</button>
+      <button type="button" class="tab-btn active" id="tab-btn-submissions" onclick="switchTab('submissions')"><i class="fa-solid fa-list-check"></i> Submissions</button>
+      <button type="button" class="tab-btn" id="tab-btn-items" onclick="switchTab('items')"><i class="fa-solid fa-utensils"></i> Menu Items</button>
+      <button type="button" class="tab-btn" id="tab-btn-email" onclick="switchTab('email')"><i class="fa-solid fa-envelope"></i> Email Settings</button>
+      <button type="button" class="tab-btn" id="tab-btn-pickup" onclick="switchTab('pickup')"><i class="fa-solid fa-clock"></i> Pickup Settings</button>
+      <button type="button" class="tab-btn" id="tab-btn-preview" onclick="switchTab('preview')"><i class="fa-solid fa-eye"></i> Form Preview</button>
+      <button type="button" class="tab-btn" id="tab-btn-share" onclick="switchTab('share')"><i class="fa-solid fa-qrcode"></i> Share / QR Code</button>
     </div>
   </nav>
 
@@ -158,7 +133,7 @@
       <div class="card">
         <div class="card-title">
           <span>Submitted Orders Log</span>
-          <button class="btn btn-secondary" onclick="clearSubmissions()"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+          <button type="button" class="btn btn-secondary" onclick="clearSubmissions()"><i class="fa-solid fa-trash-can"></i> Clear All</button>
         </div>
         <div class="table-container">
           <table>
@@ -279,12 +254,12 @@
       </div>
     </div>
 
-    <!-- CUSTOMER FORM PREVIEW TAB (ADMIN ONLY) -->
+    <!-- CUSTOMER FORM PREVIEW TAB -->
     <div id="tab-preview" class="tab-content">
       <div class="card">
         <div class="card-title">
           <span><i class="fa-solid fa-eye"></i> Customer Form Live Interactive Preview</span>
-          <button class="btn btn-secondary" onclick="reloadPreviewFrame()"><i class="fa-solid fa-rotate-right"></i> Refresh Preview</button>
+          <button type="button" class="btn btn-secondary" onclick="reloadPreviewFrame()"><i class="fa-solid fa-rotate-right"></i> Refresh Preview</button>
         </div>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 16px;">
           This preview renders `index.html` live. You can test customer selections or complete test submissions directly.
@@ -303,27 +278,14 @@
         <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 20px;"></div>
         <div style="max-width: 500px; margin: 0 auto; display: flex; gap: 8px;">
           <input type="text" id="share-url" readonly style="flex:1; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;">
-          <button class="btn btn-secondary" onclick="copyUrl()"><i class="fa-solid fa-copy"></i> Copy Link</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">Admin Portal Security Passcode</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="new-passcode">Change Staff Portal Passcode</label>
-            <input type="password" id="new-passcode" placeholder="Enter new passcode">
-          </div>
-          <div class="form-group full-width">
-            <button type="button" class="btn btn-primary" onclick="updatePasscode()" style="max-width: 220px;"><i class="fa-solid fa-key"></i> Update Passcode</button>
-          </div>
+          <button type="button" class="btn btn-secondary" onclick="copyUrl()"><i class="fa-solid fa-copy"></i> Copy Link</button>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- FULL EDIT ORDER MODAL FOR ADMIN MODIFICATIONS & PDF -->
+  <!-- EDIT ORDER MODAL -->
   <div class="modal-overlay" id="edit-order-modal">
     <div class="modal-box">
       <h3 style="color: var(--primary); margin-bottom: 16px; border-bottom: 2px solid var(--light-green); padding-bottom: 8px;">
@@ -374,10 +336,10 @@
       </div>
 
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-        <button class="btn btn-secondary" onclick="closeEditOrderModal()">Cancel</button>
+        <button type="button" class="btn btn-secondary" onclick="closeEditOrderModal()">Cancel</button>
         <div style="display: flex; gap: 10px;">
-          <button class="btn btn-secondary" onclick="downloadCurrentModalPdf()"><i class="fa-solid fa-file-pdf"></i> Download Updated PDF</button>
-          <button class="btn btn-primary" onclick="saveOrderModifications()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+          <button type="button" class="btn btn-secondary" onclick="downloadCurrentModalPdf()"><i class="fa-solid fa-file-pdf"></i> Download Updated PDF</button>
+          <button type="button" class="btn btn-primary" onclick="saveOrderModifications()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
         </div>
       </div>
     </div>
@@ -400,6 +362,54 @@
     }
     const db = firebase.database();
 
+    const DEFAULT_CATALOG = [
+      { id: "item_1", name: "Green Tea Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_2", name: "Jasmine Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_3", name: "Blueberry Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_4", name: "Mango Dome", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_5", name: "Strawberry Olive Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+      { id: "item_6", name: "Durian Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 88 }, { label: "Whole Cake", price: 380 }] },
+      { id: "item_7", name: "Seasonal Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 68 }, { label: "Whole Cake", price: 360 }] },
+      { id: "item_8", name: "Berry Pandan", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_9", name: "Earl Grey Tea Chiffon Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_10", name: "Berrylicious Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_11", name: "Peacheous Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_12", name: "Mango Snow", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_13", name: "Forêt Noire (Contains alcohol)", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+      { id: "item_14", name: "Durian Pandan Opera Cake", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_15", name: "D197 Durian Mille Feuille", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_16", name: "Durian Cream Cake Box", cat: "whole", prices: [{ label: "1 Box", price: 180 }] },
+      { id: "item_17", name: "Durian Pandan 3D Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+      { id: "item_18", name: "Durian Burnt Basque Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 88 }, { label: "Whole Cake", price: 420 }] },
+      { id: "item_19", name: "Lotus Biscoff Durian Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 198 }, { label: "Whole Cake", price: 380 }] },
+      { id: "item_20", name: "Durian Snowy Cheddar Cheese Pandan Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 210 }] },
+      { id: "item_21", name: "Durian Serradura", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+      { id: "item_22", name: "Melon Mousse Cake", cat: "whole", prices: [{ label: "Slice", price: 98 }, { label: "Whole Cake", price: 520 }] },
+      { id: "item_23", name: "Taro Cream Cake", cat: "whole", prices: [{ label: "Slice", price: 68 }, { label: "Whole Cake", price: 360 }] },
+      { id: "item_24", name: "Pandan Durian Roulade (1pc)", cat: "pastries", prices: [{ label: "1 pc", price: 100 }] },
+      { id: "item_25", name: "D197 Durian Cheese Puff (8pcs)", cat: "pastries", prices: [{ label: "8 pcs", price: 228 }] },
+      { id: "item_26", name: "Mini D24 Durian Cheese Tart (12pcs)", cat: "pastries", prices: [{ label: "12 pcs", price: 168 }] },
+      { id: "item_27", name: "Pandan Mango Cream Roll", cat: "pastries", prices: [{ label: "1 pc", price: 60 }] },
+      { id: "item_28", name: "Pandan Chiffon Cake", cat: "pastries", prices: [{ label: "1 pc", price: 138 }] },
+      { id: "item_29", name: "Scone (4pcs)", cat: "pastries", prices: [{ label: "4 pcs", price: 72 }] },
+      { id: "item_30", name: "Blueberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_31", name: "Chocolate Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_32", name: "Mango Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_33", name: "Melon Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_34", name: "Strawberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+      { id: "item_35", name: "Earl Grey Roulade with Mochi", cat: "pastries", prices: [{ label: "1 pc", price: 68 }] },
+      { id: "item_36", name: "Durian Serradura Cup", cat: "pastries", prices: [{ label: "1 Cup", price: 88 }] },
+      { id: "item_37", name: "Tiramisu", cat: "pastries", prices: [{ label: "1 Cup", price: 60 }] },
+      { id: "item_38", name: "Coffee Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+      { id: "item_39", name: "XO Sauce (238g)", cat: "sweets", prices: [{ label: "1 Jar", price: 238 }] },
+      { id: "item_40", name: "A&B Crystal Walnut (0.5lb)", cat: "sweets", prices: [{ label: "0.5 lb", price: 198 }] },
+      { id: "item_41", name: "Salted Egg & Sakura Shrimp Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+      { id: "item_42", name: "Butterfly Cookies", cat: "sweets", prices: [{ label: "1 Box", price: 98 }] },
+      { id: "item_43", name: "Assorted Chocolate (9pcs)", cat: "sweets", prices: [{ label: "9 pcs", price: 288 }] },
+      { id: "item_44", name: "ICONIC Eats Birthday Cake", cat: "addons", prices: [{ label: "Standard", price: 0 }] },
+      { id: "item_45", name: "Thermal Bag & Ice Gel", cat: "addons", prices: [{ label: "1 Set", price: 50 }] }
+    ];
+
     function generate15MinTimeSlots() {
       const slots = [];
       for (let hour = 10; hour <= 24; hour++) {
@@ -415,10 +425,9 @@
     const ALL_15MIN_SLOTS = generate15MinTimeSlots();
 
     let submissions = [];
-    let catalog = [];
+    let catalog = DEFAULT_CATALOG;
     let emailSettings = { primary: 'pastry.kitchen@restaurant.com', cc: '', publicKey: '', serviceId: '', templateId: '' };
     let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
-    let currentPasscode = "1234";
 
     function formatDateTime24(dateObj) {
       const dd = String(dateObj.getDate()).padStart(2, '0');
@@ -427,22 +436,6 @@
       const hh = String(dateObj.getHours()).padStart(2, '0');
       const min = String(dateObj.getMinutes()).padStart(2, '0');
       return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
-    }
-
-    // PASSCODE AUTHENTICATION
-    function handlePasscodeCheck(e) {
-      e.preventDefault();
-      const input = document.getElementById('passcode-input').value;
-      if (input === currentPasscode) {
-        document.getElementById('lock-screen').style.display = 'none';
-        sessionStorage.setItem('admin_unlocked', 'true');
-      } else {
-        document.getElementById('lock-error').style.display = 'block';
-      }
-    }
-
-    if (sessionStorage.getItem('admin_unlocked') === 'true') {
-      document.getElementById('lock-screen').style.display = 'none';
     }
 
     function switchTab(tabId) {
@@ -459,7 +452,6 @@
       if (tabId === 'share') renderQr();
     }
 
-    // REALTIME LISTENERS FROM FIREBASE
     db.ref('cake_submissions').on('value', (snapshot) => {
       const val = snapshot.val();
       submissions = val ? Object.values(val).reverse() : [];
@@ -470,8 +462,10 @@
       const val = snapshot.val();
       if (val) {
         catalog = Array.isArray(val) ? val : Object.values(val);
-        renderItems();
+      } else {
+        db.ref('cake_catalog').set(DEFAULT_CATALOG);
       }
+      renderItems();
     });
 
     db.ref('cake_email').on('value', (snapshot) => {
@@ -493,24 +487,6 @@
         renderPickupSettings();
       }
     });
-
-    db.ref('cake_passcode').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) currentPasscode = val;
-    });
-
-    function updatePasscode() {
-      const newPass = document.getElementById('new-passcode').value.trim();
-      if (newPass) {
-        db.ref('cake_passcode').set(newPass, (err) => {
-          if (!err) {
-            currentPasscode = newPass;
-            alert("Passcode updated successfully!");
-            document.getElementById('new-passcode').value = '';
-          }
-        });
-      }
-    }
 
     function renderSubmissions() {
       const tbody = document.getElementById('submissions-tbody');
@@ -542,7 +518,7 @@
             <td><span class="staff-badge"><i class="fa-solid fa-user"></i> ${staffName}</span></td>
             <td style="font-size:0.8rem; color:#666;">${lastUpdated}</td>
             <td>
-              <button class="btn btn-secondary" onclick="openEditOrderModal('${sub.id}')" style="padding: 4px 8px; font-size: 0.8rem;">
+              <button type="button" class="btn btn-secondary" onclick="openEditOrderModal('${sub.id}')" style="padding: 4px 8px; font-size: 0.8rem;">
                 <i class="fa-solid fa-pen"></i> Edit / Process
               </button>
             </td>
@@ -664,7 +640,6 @@
       }
     }
 
-    // MENU ITEMS LOGIC
     function renderItems() {
       const tbody = document.getElementById('items-tbody');
       const badge = document.getElementById('catalog-count-badge');
@@ -679,8 +654,8 @@
             <td><span class="badge-cat">${item.cat}</span></td>
             <td>${priceStr}</td>
             <td>
-              <button class="btn btn-secondary" onclick="editItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Edit</button>
-              <button class="btn btn-danger" onclick="deleteItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Delete</button>
+              <button type="button" class="btn btn-secondary" onclick="editItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Edit</button>
+              <button type="button" class="btn btn-danger" onclick="deleteItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Delete</button>
             </td>
           </tr>
         `;
@@ -741,7 +716,6 @@
       document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Item';
     }
 
-    // PICKUP LOGIC
     function renderPickupSettings() {
       document.getElementById('pickup-lead').value = pickupSettings.leadDays || 1;
       const container = document.getElementById('time-slot-container');
@@ -776,7 +750,6 @@
       });
     }
 
-    // EMAIL LOGIC
     function handleSaveEmail(e) {
       e.preventDefault();
       const primary = document.getElementById('email-primary').value;
@@ -790,13 +763,11 @@
       });
     }
 
-    // PREVIEW FRAME LOGIC
     function reloadPreviewFrame() {
       const frame = document.getElementById('preview-iframe');
       if (frame) frame.src = frame.src;
     }
 
-    // SHARE & QR CODE
     function renderQr() {
       const shareInput = document.getElementById('share-url');
       const currentOrigin = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
@@ -821,6 +792,9 @@
       document.execCommand('copy');
       alert("Customer form link copied to clipboard!");
     }
+
+    // Initialize default catalog rendering on startup
+    renderItems();
   </script>
 </body>
 </html>
