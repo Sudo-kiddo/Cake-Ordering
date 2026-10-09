@@ -167,7 +167,7 @@
         <div class="card-title">
           <span id="form-item-title"><i class="fa-solid fa-plus-circle"></i> Add New Menu Item</span>
         </div>
-        <form id="item-form" onsubmit="handleSaveItem(event)">
+        <form id="item-form" onsubmit="event.preventDefault(); handleSaveItem();">
           <input type="hidden" id="edit-item-id">
           <div class="form-grid">
             <div class="form-group"><label for="item-name">Item Name *</label><input type="text" id="item-name" required placeholder="e.g. Green Tea Chocolate Cake"></div>
@@ -183,7 +183,7 @@
             <div class="form-group"><label for="item-price-standard">Slice / Standard Price ($) *</label><input type="number" id="item-price-standard" required min="0" placeholder="60"></div>
             <div class="form-group"><label for="item-price-large">Whole / Large Price ($) (Optional)</label><input type="number" id="item-price-large" min="0" placeholder="340"></div>
             <div class="form-group full-width" style="display: flex; gap: 10px; margin-top: 10px;">
-              <button type="submit" class="btn btn-primary" id="btn-save-item"><i class="fa-solid fa-floppy-disk"></i> Save Item</button>
+              <button type="button" class="btn btn-primary" id="btn-save-item" onclick="handleSaveItem()"><i class="fa-solid fa-floppy-disk"></i> Save Item</button>
               <button type="button" class="btn btn-secondary" onclick="resetItemForm()">Cancel</button>
             </div>
           </div>
@@ -208,14 +208,16 @@
     <div id="tab-email" class="tab-content">
       <div class="card">
         <div class="card-title">Email Notification Settings</div>
-        <form id="email-form" onsubmit="handleSaveEmail(event)">
+        <form id="email-form" onsubmit="event.preventDefault(); handleSaveEmail();">
           <div class="form-grid">
             <div class="form-group"><label for="email-primary">Primary Recipient Email *</label><input type="email" id="email-primary" required placeholder="pastry.kitchen@restaurant.com"></div>
             <div class="form-group"><label for="email-cc">CC Email Addresses (Comma separated)</label><input type="text" id="email-cc" placeholder="manager@restaurant.com"></div>
             <div class="form-group"><label for="email-publickey">EmailJS Public Key</label><input type="text" id="email-publickey" placeholder="e.g. user_123abc"></div>
             <div class="form-group"><label for="email-serviceid">EmailJS Service ID</label><input type="text" id="email-serviceid" placeholder="e.g. service_gmail"></div>
             <div class="form-group full-width"><label for="email-templateid">EmailJS Template ID</label><input type="text" id="email-templateid" placeholder="e.g. template_cake_order"></div>
-            <div class="form-group full-width" style="margin-top: 10px;"><button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Email Settings</button></div>
+            <div class="form-group full-width" style="margin-top: 10px;">
+              <button type="button" class="btn btn-primary" onclick="handleSaveEmail()"><i class="fa-solid fa-floppy-disk"></i> Save Email Settings</button>
+            </div>
           </div>
         </form>
       </div>
@@ -225,7 +227,7 @@
     <div id="tab-pickup" class="tab-content">
       <div class="card">
         <div class="card-title">Pickup Rules & 15-Minute Time Slots</div>
-        <form id="pickup-form" onsubmit="handleSavePickup(event)">
+        <form id="pickup-form" onsubmit="event.preventDefault(); handleSavePickup();">
           <div class="form-grid">
             <div class="form-group">
               <label for="pickup-lead">Minimum Advance Notice (Days)</label>
@@ -247,7 +249,7 @@
             </div>
 
             <div class="form-group full-width" style="margin-top: 16px;">
-              <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Pickup Settings</button>
+              <button type="button" class="btn btn-primary" onclick="handleSavePickup()"><i class="fa-solid fa-floppy-disk"></i> Save Pickup Settings</button>
             </div>
           </div>
         </form>
@@ -662,10 +664,13 @@
       });
     }
 
-    function handleSaveItem(e) {
-      e.preventDefault();
+    function handleSaveItem() {
+      const name = document.getElementById('item-name').value.trim();
+      if (!name) {
+        alert("Please enter an item name.");
+        return;
+      }
       const editId = document.getElementById('edit-item-id').value;
-      const name = document.getElementById('item-name').value;
       const cat = document.getElementById('item-category').value;
       const stdPrice = parseFloat(document.getElementById('item-price-standard').value) || 0;
       const lgPriceInput = document.getElementById('item-price-large').value;
@@ -684,7 +689,7 @@
 
       db.ref('cake_catalog').set(catalog);
       resetItemForm();
-      alert("Menu catalog updated on cloud!");
+      alert("Menu catalog updated successfully!");
     }
 
     function editItem(id) {
@@ -739,27 +744,42 @@
       });
     }
 
-    function handleSavePickup(e) {
-      e.preventDefault();
+    function handleSavePickup() {
       const leadDays = parseInt(document.getElementById('pickup-lead').value) || 0;
       const checkedBoxes = document.querySelectorAll('#time-slot-container input[type="checkbox"]:checked');
       const enabledSlots = Array.from(checkedBoxes).map(cb => cb.value);
 
-      db.ref('cake_pickup').set({ leadDays, enabledSlots }, (err) => {
-        if (!err) alert("Pickup rules updated on cloud!");
+      pickupSettings = { leadDays, enabledSlots };
+
+      db.ref('cake_pickup').set(pickupSettings, (err) => {
+        if (!err) {
+          alert("Pickup settings saved successfully!");
+        } else {
+          alert("Failed to save pickup settings to database.");
+        }
       });
     }
 
-    function handleSaveEmail(e) {
-      e.preventDefault();
-      const primary = document.getElementById('email-primary').value;
-      const cc = document.getElementById('email-cc').value;
-      const publicKey = document.getElementById('email-publickey').value;
-      const serviceId = document.getElementById('email-serviceid').value;
-      const templateId = document.getElementById('email-templateid').value;
+    function handleSaveEmail() {
+      const primary = document.getElementById('email-primary').value.trim();
+      const cc = document.getElementById('email-cc').value.trim();
+      const publicKey = document.getElementById('email-publickey').value.trim();
+      const serviceId = document.getElementById('email-serviceid').value.trim();
+      const templateId = document.getElementById('email-templateid').value.trim();
 
-      db.ref('cake_email').set({ primary, cc, publicKey, serviceId, templateId }, (err) => {
-        if (!err) alert("Email settings updated on cloud!");
+      if (!primary) {
+        alert("Please enter a primary recipient email address.");
+        return;
+      }
+
+      emailSettings = { primary, cc, publicKey, serviceId, templateId };
+
+      db.ref('cake_email').set(emailSettings, (err) => {
+        if (!err) {
+          alert("Email settings saved successfully!");
+        } else {
+          alert("Failed to save email settings to database.");
+        }
       });
     }
 
