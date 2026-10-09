@@ -371,7 +371,7 @@
       if (val) {
         catalog = Array.isArray(val) ? val : Object.values(val);
       } else {
-        db.ref('cake_catalog').set(DEFAULT_CATALOG);
+        catalog = DEFAULT_CATALOG;
       }
       renderFormCatalog();
     });
@@ -380,15 +380,15 @@
       const val = snapshot.val();
       if (val) {
         pickupSettings = val;
-        initPickupDateAndTime();
       }
+      initPickupDateAndTime();
     });
 
     db.ref('cake_email').on('value', (snapshot) => {
       const val = snapshot.val();
       if (val) {
         emailSettings = val;
-        if (emailSettings.publicKey) {
+        if (emailSettings.publicKey && typeof emailjs !== 'undefined') {
           emailjs.init(emailSettings.publicKey);
         }
       }
@@ -401,6 +401,8 @@
 
     function initPickupDateAndTime() {
       const dateInput = document.getElementById('pickupDate');
+      if (!dateInput) return;
+
       const minDate = new Date();
       minDate.setDate(minDate.getDate() + (pickupSettings.leadDays || 1));
       
@@ -410,11 +412,14 @@
       
       const minDateStr = `${yyyy}-${mm}-${dd}`;
       dateInput.min = minDateStr;
-      dateInput.value = minDateStr;
+      if (!dateInput.value) {
+        dateInput.value = minDateStr;
+      }
 
       const timeSelect = document.getElementById('pickupTime');
+      if (!timeSelect) return;
       timeSelect.innerHTML = '';
-      const slots = pickupSettings.enabledSlots || ALL_15MIN_SLOTS;
+      const slots = (pickupSettings.enabledSlots && pickupSettings.enabledSlots.length > 0) ? pickupSettings.enabledSlots : ALL_15MIN_SLOTS;
       slots.forEach(slot => {
         const opt = document.createElement('option');
         opt.value = slot; opt.innerText = slot;
@@ -427,7 +432,8 @@
         const catContainer = document.getElementById(`cat-${cat}`);
         if (!catContainer) return;
         catContainer.innerHTML = '';
-        catalog.filter(i => i.cat === cat).forEach(item => {
+        const catItems = catalog.filter(i => i.cat === cat);
+        catItems.forEach(item => {
           catContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item));
         });
       });
@@ -435,12 +441,15 @@
     }
 
     function createItemCardHtml(item) {
-      const priceText = item.prices.map(p => `$${p.price}`).join(' / ');
-      let optionsHtml = item.prices.length > 1 
+      const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
+      if (prices.length === 0) prices.push({ label: "Standard", price: 0 });
+
+      const priceText = prices.map(p => `$${p.price}`).join(' / ');
+      let optionsHtml = prices.length > 1 
         ? `<select class="size-select-box" id="select_size_${item.id}">
-             ${item.prices.map((p, idx) => `<option value="${idx}">${p.label} - $${p.price}</option>`).join('')}
+             ${prices.map((p, idx) => `<option value="${idx}">${p.label} -$${p.price}</option>`).join('')}
            </select>`
-        : `<span style="font-size:0.8rem; color:#666;">${item.prices[0].label}</span>`;
+        : `<span style="font-size:0.8rem; color:#666;">${prices[0].label}</span>`;
 
       return `
         <div class="item-card" id="card_${item.id}">
@@ -459,13 +468,18 @@
     }
 
     function toggleAccordion(id) {
-      document.getElementById(id).classList.toggle('collapsed');
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('collapsed');
     }
 
     function addToCart(itemId) {
       const item = catalog.find(i => i.id === itemId);
+      if (!item) return;
+      const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
+
       const sizeSelect = document.getElementById(`select_size_${itemId}`);
       const sizeIdx = sizeSelect ? parseInt(sizeSelect.value) || 0 : 0;
+      const selectedOption = prices[sizeIdx] || prices[0];
       const cartKey = `${itemId}_${sizeIdx}`;
 
       if (cart[cartKey]) {
@@ -473,7 +487,7 @@
       } else {
         cart[cartKey] = {
           cartKey: cartKey, itemId: itemId, name: item.name,
-          option: item.prices[sizeIdx].label, price: item.prices[sizeIdx].price, qty: 1
+          option: selectedOption.label, price: selectedOption.price, qty: 1
         };
       }
 
@@ -511,9 +525,13 @@
         totalPrice += (item.price * item.qty);
       });
 
-      document.getElementById('cart-badge-count').innerText = totalQty;
-      document.getElementById('cart-float-total').innerText = `$${totalPrice}`;
-      document.getElementById('drawer-total-price').innerText = `$${totalPrice}`;
+      const badge = document.getElementById('cart-badge-count');
+      const floatTotal = document.getElementById('cart-float-total');
+      const drawerTotal = document.getElementById('drawer-total-price');
+
+      if (badge) badge.innerText = totalQty;
+      if (floatTotal) floatTotal.innerText = `$${totalPrice}`;
+      if (drawerTotal) drawerTotal.innerText = `$${totalPrice}`;
 
       catalog.forEach(item => {
         const card = document.getElementById(`card_${item.id}`);
@@ -525,6 +543,8 @@
       });
 
       const drawerBody = document.getElementById('cart-drawer-body');
+      if (!drawerBody) return;
+
       if (cartItems.length === 0) {
         drawerBody.innerHTML = `
           <div style="text-align: center; color: var(--text-muted); margin-top: 60px;">
@@ -626,7 +646,7 @@
         if (error) {
           alert("Submission failed. Please try again.");
         } else {
-          if (emailSettings.serviceId && emailSettings.templateId) {
+          if (emailSettings.serviceId && emailSettings.templateId && typeof emailjs !== 'undefined') {
             const templateParams = {
               to_email: emailSettings.primary,
               cc_email: emailSettings.cc || '',
@@ -701,6 +721,12 @@
       document.getElementById('cart-float-bar').style.display = 'flex';
       initPickupDateAndTime();
     }
+
+    // Direct initialization on document load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderFormCatalog();
+      initPickupDateAndTime();
+    });
   </script>
 </body>
 </html>
