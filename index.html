@@ -4,17 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cake Ordering Form</title>
-  <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- html2pdf.js for Client-side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <!-- EmailJS SDK for Instant Email Dispatch -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
-  <!-- Firebase JavaScript Libraries -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -97,10 +90,22 @@
     .cart-total-price { font-weight: 700; font-size: 1.15rem; }
     .cart-view-btn { background: rgba(255, 255, 255, 0.2); color: white; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
 
-    /* Cart Drawer Modal */
-    .cart-drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-    .cart-drawer-overlay.active { opacity: 1; visibility: visible; }
-    .cart-drawer { position: fixed; top: 0; right: -420px; width: 100%; max-width: 420px; height: 100%; background: white; z-index: 2001; box-shadow: -5px 0 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    /* Cart Drawer – FIXED pointer-events so it never blocks clicks when closed */
+    .cart-drawer-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5); z-index: 2000;
+      opacity: 0; visibility: hidden; pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    .cart-drawer-overlay.active {
+      opacity: 1; visibility: visible; pointer-events: auto;
+    }
+    .cart-drawer {
+      position: fixed; top: 0; right: -420px; width: 100%; max-width: 420px; height: 100%;
+      background: white; z-index: 2001; box-shadow: -5px 0 25px rgba(0,0,0,0.15);
+      display: flex; flex-direction: column;
+      transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
     .cart-drawer.active { right: 0; }
     .drawer-header { background: var(--primary); color: white; padding: 20px; display: flex; align-items: center; justify-content: space-between; }
     .drawer-header h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
@@ -119,7 +124,10 @@
     .cart-qty-num { width: 36px; height: 32px; border: none; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--primary); background: #ffffff; line-height: 32px; }
     .cart-remove-btn { color: #e63946; background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; }
 
-    .btn-checkout { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 30px; font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .btn-checkout {
+      background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 30px;
+      font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
     .btn-checkout:hover { background: var(--primary-hover); }
 
     #confirmation-screen { display: none; text-align: center; padding: 60px 20px; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
@@ -143,7 +151,6 @@
     </header>
 
     <form id="cake-order-form" onsubmit="event.preventDefault(); handleCustomerSubmit();">
-      <!-- Customer Information Card -->
       <div class="card">
         <div class="card-title">
           <span><i class="fa-solid fa-user-tag"></i> Customer & Order Details</span>
@@ -157,22 +164,18 @@
             <label for="tel">Contact Tel *</label>
             <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
           </div>
-          
           <div class="form-group">
             <label for="pickupDate">Pickup Date *</label>
             <input type="date" id="pickupDate" required>
           </div>
-
           <div class="form-group">
             <label for="pickupTime">Pickup Time *</label>
             <select id="pickupTime" required></select>
           </div>
-
           <div class="form-group full-width">
             <label for="wording">Wording on Cake</label>
             <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday John!&#10;Wish you happiness and healthy always!"></textarea>
           </div>
-
           <div class="form-group full-width">
             <label for="remarks">Remarks</label>
             <textarea id="remarks" rows="2" placeholder="Any special requests or notes..."></textarea>
@@ -180,7 +183,6 @@
         </div>
       </div>
 
-      <!-- Item Selection Accordions -->
       <div class="card">
         <div class="card-title">
           <span><i class="fa-solid fa-cake-candles"></i> Item Selection</span>
@@ -227,7 +229,7 @@
     </form>
   </div>
 
-  <!-- Floating Cart Bar at Bottom -->
+  <!-- Floating Cart Bar -->
   <div class="cart-float-bar" id="cart-float-bar" onclick="openCartDrawer()">
     <div class="cart-float-info">
       <div class="cart-icon-wrapper">
@@ -242,7 +244,7 @@
     </div>
   </div>
 
-  <!-- Slide-out Cart Drawer -->
+  <!-- Cart Drawer -->
   <div class="cart-drawer-overlay" id="cart-overlay" onclick="closeCartDrawer()"></div>
   <div class="cart-drawer" id="cart-drawer">
     <div class="drawer-header">
@@ -272,7 +274,7 @@
   </div>
 
   <script>
-    // --- FIREBASE CONFIGURATION ---
+    // --- FIREBASE CONFIGURATION (replace with your real values) ---
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -365,38 +367,43 @@
       return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
     }
 
-    db.ref('cake_catalog').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        catalog = Array.isArray(val) ? val : Object.values(val);
-      } else {
-        catalog = DEFAULT_CATALOG;
-      }
-      renderFormCatalog();
-    });
-
-    db.ref('cake_pickup').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        pickupSettings = val;
-      }
-      initPickupDateAndTime();
-    });
-
-    db.ref('cake_email').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        emailSettings = val;
-        if (emailSettings.publicKey && typeof emailjs !== 'undefined') {
-          emailjs.init(emailSettings.publicKey);
+    // Firebase listeners with error protection
+    try {
+      db.ref('cake_catalog').on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          catalog = Array.isArray(val) ? val : Object.values(val);
+        } else {
+          catalog = DEFAULT_CATALOG;
         }
-      }
-    });
+        renderFormCatalog();
+      });
 
-    db.ref('cake_submissions').on('value', (snapshot) => {
-      const val = snapshot.val();
-      submissionsList = val ? Object.values(val) : [];
-    });
+      db.ref('cake_pickup').on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) pickupSettings = val;
+        initPickupDateAndTime();
+      });
+
+      db.ref('cake_email').on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          emailSettings = val;
+          if (emailSettings.publicKey && typeof emailjs !== 'undefined') {
+            emailjs.init(emailSettings.publicKey);
+          }
+        }
+      });
+
+      db.ref('cake_submissions').on('value', (snapshot) => {
+        const val = snapshot.val();
+        submissionsList = val ? Object.values(val) : [];
+      });
+    } catch (e) {
+      console.warn("Firebase listener error (using defaults):", e);
+      renderFormCatalog();
+      initPickupDateAndTime();
+    }
 
     function initPickupDateAndTime() {
       const dateInput = document.getElementById('pickupDate');
@@ -411,9 +418,7 @@
       
       const minDateStr = `${yyyy}-${mm}-${dd}`;
       dateInput.min = minDateStr;
-      if (!dateInput.value) {
-        dateInput.value = minDateStr;
-      }
+      if (!dateInput.value) dateInput.value = minDateStr;
 
       const timeSelect = document.getElementById('pickupTime');
       if (!timeSelect) return;
@@ -511,6 +516,7 @@
     }
 
     function removeFromCart(cartKey) {
+      if (!confirm("Remove this item from your cart?")) return;
       delete cart[cartKey];
       updateCartUI();
     }
@@ -601,9 +607,7 @@
       todayOrders.forEach(s => {
         const seqStr = String(s.id).substring(8);
         const seqNum = parseInt(seqStr, 10);
-        if (!isNaN(seqNum) && seqNum > maxSeq) {
-          maxSeq = seqNum;
-        }
+        if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
       });
 
       const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
@@ -617,23 +621,34 @@
       const pickupTime = document.getElementById('pickupTime').value;
 
       if (!guestName || !tel || !pickupDateVal || !pickupTime) {
-        alert("Please complete all required customer & order details (Guest Name, Tel, Pickup Date, and Pickup Time).");
+        alert("Please complete all required fields:\n• Guest Name\n• Contact Tel\n• Pickup Date\n• Pickup Time");
         return;
       }
 
       const items = Object.values(cart);
       if (items.length === 0) {
-        alert("Your cart is empty! Please add at least one item from the selection below.");
+        alert("Your cart is empty!\nPlease add at least one item before submitting.");
         openCartDrawer();
         return;
       }
+
+      // ===== CONFIRMATION DIALOG =====
+      const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const confirmMsg = `Confirm your order?\n\n` +
+        `Guest: ${guestName}\n` +
+        `Pickup: ${formatDateDisplay(pickupDateVal)} at ${pickupTime}\n` +
+        `Items: ${items.length} line(s)\n` +
+        `Total: $${total}\n\n` +
+        `A PDF will be downloaded and the kitchen will be notified.`;
+
+      if (!confirm(confirmMsg)) return;
 
       const wording = document.getElementById('wording').value || 'None';
       const remarks = document.getElementById('remarks').value || 'None';
       const pickupDate = formatDateDisplay(pickupDateVal);
 
       const orderId = generateNextOrderId();
-      const totalAmount = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+      const totalAmount = total;
       const formattedTimestamp = formatDateTime24(new Date());
 
       const submission = {
@@ -649,8 +664,10 @@
 
       db.ref('cake_submissions/' + orderId).set(submission, (error) => {
         if (error) {
-          alert("Submission failed. Please check your connection and try again.");
+          alert("Submission failed.\nPlease check your internet connection or Firebase configuration and try again.");
+          console.error(error);
         } else {
+          // Email
           try {
             if (emailSettings.serviceId && emailSettings.templateId && typeof emailjs !== 'undefined') {
               const templateParams = {
@@ -666,19 +683,15 @@
                 total_amount: submission.totalAmount
               };
               emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
-                .then(() => console.log('Instant email sent successfully'))
-                .catch(err => console.error('Email dispatch failed:', err));
+                .then(() => console.log('Email sent'))
+                .catch(err => console.error('Email failed:', err));
             }
-          } catch (e) {
-            console.warn("Email dispatch skipped.", e);
-          }
+          } catch (e) { console.warn("Email skipped", e); }
 
-          try {
-            generatePdf(submission);
-          } catch (pdfErr) {
-            console.warn("PDF generation error:", pdfErr);
-          }
+          // PDF
+          try { generatePdf(submission); } catch (pdfErr) { console.warn("PDF error:", pdfErr); }
 
+          // Show success screen
           document.getElementById('form-container').style.display = 'none';
           document.getElementById('cart-float-bar').style.display = 'none';
           document.getElementById('confirmation-screen').style.display = 'block';
