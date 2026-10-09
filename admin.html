@@ -6,6 +6,7 @@
   <title>Cake Ordering Form - Staff Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -47,7 +48,7 @@
     .tab-btn:hover { color: white; background: rgba(255,255,255,0.15); }
     .tab-btn.active { background: white; color: var(--primary); font-weight: 600; }
 
-    .container { max-width: 1140px; margin: 24px auto; padding: 0 16px; }
+    .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
@@ -61,7 +62,7 @@
     .full-width { grid-column: span 2; }
     .form-group { display: flex; flex-direction: column; gap: 6px; }
     .form-group label { font-size: 0.88rem; font-weight: 600; }
-    .form-group input, .form-group select { padding: 10px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); outline: none; }
+    .form-group input, .form-group textarea, .form-group select { padding: 10px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); outline: none; }
 
     .btn { padding: 10px 20px; font-weight: 600; border-radius: var(--radius-sm); border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
     .btn-primary { background: var(--primary); color: white; }
@@ -83,18 +84,18 @@
     }
 
     .badge-cat { text-transform: capitalize; font-size: 0.8rem; background: #eef2ef; color: var(--primary); padding: 3px 8px; border-radius: 10px; font-weight: 600; }
-    
-    .staff-badge {
-      display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.8rem;
-    }
+    .staff-badge { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; }
+    .ref-badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; }
 
+    /* EDIT ORDER MODAL */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;
-      display: none; align-items: center; justify-content: center;
+      display: none; align-items: center; justify-content: center; overflow-y: auto; padding: 20px 0;
     }
     .modal-overlay.active { display: flex; }
     .modal-box {
-      background: white; border-radius: var(--radius-md); padding: 24px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      background: white; border-radius: var(--radius-md); padding: 24px; width: 100%; max-width: 680px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      max-height: 90vh; overflow-y: auto;
     }
 
     @media (max-width: 768px) {
@@ -112,7 +113,7 @@
     <div class="nav-tabs">
       <button class="tab-btn active" onclick="switchTab('submissions')"><i class="fa-solid fa-list-check"></i> Submissions</button>
       <button class="tab-btn" onclick="switchTab('items')"><i class="fa-solid fa-utensils"></i> Menu Items</button>
-      <button class="tab-btn" onclick="switchTab('email')"><i class="fa-solid fa-envelope"></i> Email</button>
+      <button class="tab-btn" onclick="switchTab('email')"><i class="fa-solid fa-envelope"></i> Email Settings</button>
       <button class="tab-btn" onclick="switchTab('pickup')"><i class="fa-solid fa-clock"></i> Pickup Settings</button>
       <button class="tab-btn" onclick="switchTab('share')"><i class="fa-solid fa-qrcode"></i> Share / QR Code</button>
     </div>
@@ -132,6 +133,7 @@
             <thead>
               <tr>
                 <th>Order #</th>
+                <th>Ref No.</th>
                 <th>Created Time</th>
                 <th>Guest Name</th>
                 <th>Tel</th>
@@ -203,6 +205,9 @@
           <div class="form-grid">
             <div class="form-group"><label for="email-primary">Primary Recipient Email *</label><input type="email" id="email-primary" required placeholder="pastry.kitchen@restaurant.com"></div>
             <div class="form-group"><label for="email-cc">CC Email Addresses (Comma separated)</label><input type="text" id="email-cc" placeholder="manager@restaurant.com"></div>
+            <div class="form-group"><label for="email-publickey">EmailJS Public Key (Optional for instant background emails)</label><input type="text" id="email-publickey" placeholder="e.g. user_123abc"></div>
+            <div class="form-group"><label for="email-serviceid">EmailJS Service ID</label><input type="text" id="email-serviceid" placeholder="e.g. service_gmail"></div>
+            <div class="form-group full-width"><label for="email-templateid">EmailJS Template ID</label><input type="text" id="email-templateid" placeholder="e.g. template_cake_order"></div>
             <div class="form-group full-width" style="margin-top: 10px;"><button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Email Settings</button></div>
           </div>
         </form>
@@ -257,18 +262,62 @@
 
   </div>
 
-  <!-- MODAL FOR ASSIGNING HANDLING STAFF -->
-  <div class="modal-overlay" id="staff-modal">
+  <!-- FULL EDIT ORDER MODAL FOR ADMIN MODIFICATIONS & PDF -->
+  <div class="modal-overlay" id="edit-order-modal">
     <div class="modal-box">
-      <h3 style="color: var(--primary); margin-bottom: 12px;"><i class="fa-solid fa-user-gear"></i> Order Staff Processing</h3>
-      <input type="hidden" id="modal-order-id">
-      <div class="form-group" style="margin-bottom: 16px;">
-        <label for="modal-staff-name">Handling Staff Name / ID:</label>
-        <input type="text" id="modal-staff-name" placeholder="e.g. Mary (Pastry Kitchen)">
+      <h3 style="color: var(--primary); margin-bottom: 16px; border-bottom: 2px solid var(--light-green); padding-bottom: 8px;">
+        <i class="fa-solid fa-file-pen"></i> Edit Order Details (#<span id="modal-order-id-label"></span>)
+      </h3>
+      <input type="hidden" id="edit-modal-order-id">
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="edit-ref-no">Reference Number (Staff Input)</label>
+          <input type="text" id="edit-ref-no" placeholder="e.g. REF-88219">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-handling-staff">Handling Staff Name</label>
+          <input type="text" id="edit-handling-staff" placeholder="e.g. Chef Mary">
+        </div>
+
+        <div class="form-group">
+          <label for="edit-guest-name">Guest Name</label>
+          <input type="text" id="edit-guest-name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-tel">Contact Tel</label>
+          <input type="text" id="edit-tel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-pickup-date">Pickup Date (DD/MM/YYYY)</label>
+          <input type="text" id="edit-pickup-date" required>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-pickup-time">Pickup Time</label>
+          <input type="text" id="edit-pickup-time" required>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="edit-wording">Wording on Cake</label>
+          <textarea id="edit-wording" rows="2"></textarea>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="edit-remarks">Remarks</label>
+          <textarea id="edit-remarks" rows="2"></textarea>
+        </div>
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn btn-secondary" onclick="closeStaffModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveStaffAssignment()">Update & Download PDF</button>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <button class="btn btn-secondary" onclick="closeEditOrderModal()">Cancel</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" onclick="downloadCurrentModalPdf()"><i class="fa-solid fa-file-pdf"></i> Download Updated PDF</button>
+          <button class="btn btn-primary" onclick="saveOrderModifications()"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+        </div>
       </div>
     </div>
   </div>
@@ -276,13 +325,13 @@
   <script>
     // --- FIREBASE CONFIGURATION (REPLACE WITH YOUR KEYS FROM FIREBASE CONSOLE) ---
     const firebaseConfig = {
-      apiKey: "AIzaSyBNMvnpxdm0ckOvqjKdYg_Ui5I0yo9Og7k",
-      authDomain: "cake-ordering-52b19.firebaseapp.com",
-      databaseURL: "https://cake-ordering-52b19-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "cake-ordering-52b19",
-      storageBucket: "cake-ordering-52b19.firebasestorage.app",
-      messagingSenderId: "884843232096",
-      appId: "1:884843232096:web:c28d51e676d4370f113c05"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     if (!firebase.apps.length) {
@@ -306,8 +355,17 @@
 
     let submissions = [];
     let catalog = [];
-    let emailSettings = { primary: 'pastry.kitchen@restaurant.com', cc: '' };
+    let emailSettings = { primary: 'pastry.kitchen@restaurant.com', cc: '', publicKey: '', serviceId: '', templateId: '' };
     let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
+
+    function formatDateTime24(dateObj) {
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const yyyy = dateObj.getFullYear();
+      const hh = String(dateObj.getHours()).padStart(2, '0');
+      const min = String(dateObj.getMinutes()).padStart(2, '0');
+      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+    }
 
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -326,7 +384,7 @@
     // --- REALTIME LISTENERS FROM FIREBASE ---
     db.ref('cake_submissions').on('value', (snapshot) => {
       const val = snapshot.val();
-      submissions = val ? Object.values(val).reverse() : []; // Newest orders first
+      submissions = val ? Object.values(val).reverse() : [];
       renderSubmissions();
     });
 
@@ -344,6 +402,9 @@
         emailSettings = val;
         document.getElementById('email-primary').value = emailSettings.primary || '';
         document.getElementById('email-cc').value = emailSettings.cc || '';
+        document.getElementById('email-publickey').value = emailSettings.publicKey || '';
+        document.getElementById('email-serviceid').value = emailSettings.serviceId || '';
+        document.getElementById('email-templateid').value = emailSettings.templateId || '';
       }
     });
 
@@ -368,13 +429,15 @@
       emptyMsg.style.display = 'none';
 
       submissions.forEach((sub) => {
-        const totalQty = sub.items.reduce((s, i) => s + i.qty, 0);
+        const totalQty = sub.items ? sub.items.reduce((s, i) => s + i.qty, 0) : 0;
         const staffName = sub.handlingStaff || 'Unassigned';
+        const refNo = sub.refNo || 'N/A';
         const lastUpdated = sub.lastUpdated || sub.dateSubmitted;
 
         tbody.innerHTML += `
           <tr>
             <td style="font-weight: 600;">#${sub.id}</td>
+            <td><span class="ref-badge">${refNo}</span></td>
             <td style="font-size:0.8rem; color:#666;">${sub.dateSubmitted}</td>
             <td>${sub.guestName}</td>
             <td>${sub.tel}</td>
@@ -384,8 +447,8 @@
             <td><span class="staff-badge"><i class="fa-solid fa-user"></i> ${staffName}</span></td>
             <td style="font-size:0.8rem; color:#666;">${lastUpdated}</td>
             <td>
-              <button class="btn btn-secondary" onclick="openStaffModal('${sub.id}')" style="padding: 4px 8px; font-size: 0.8rem;">
-                <i class="fa-solid fa-pen"></i> Process / PDF
+              <button class="btn btn-secondary" onclick="openEditOrderModal('${sub.id}')" style="padding: 4px 8px; font-size: 0.8rem;">
+                <i class="fa-solid fa-pen"></i> Edit / Process
               </button>
             </td>
           </tr>
@@ -393,43 +456,71 @@
       });
     }
 
-    function openStaffModal(orderId) {
+    function openEditOrderModal(orderId) {
       const sub = submissions.find(s => String(s.id) === String(orderId));
       if (!sub) return;
-      document.getElementById('modal-order-id').value = orderId;
-      document.getElementById('modal-staff-name').value = sub.handlingStaff !== 'Unassigned' ? sub.handlingStaff : '';
-      document.getElementById('staff-modal').classList.add('active');
+
+      document.getElementById('edit-modal-order-id').value = sub.id;
+      document.getElementById('modal-order-id-label').innerText = sub.id;
+      document.getElementById('edit-ref-no').value = sub.refNo || '';
+      document.getElementById('edit-handling-staff').value = sub.handlingStaff !== 'Unassigned' ? sub.handlingStaff : '';
+      document.getElementById('edit-guest-name').value = sub.guestName || '';
+      document.getElementById('edit-tel').value = sub.tel || '';
+      document.getElementById('edit-pickup-date').value = sub.pickupDate || '';
+      document.getElementById('edit-pickup-time').value = sub.pickupTime || '';
+      document.getElementById('edit-wording').value = sub.wording || '';
+      document.getElementById('edit-remarks').value = sub.remarks || '';
+
+      document.getElementById('edit-order-modal').classList.add('active');
     }
 
-    function closeStaffModal() {
-      document.getElementById('staff-modal').classList.remove('active');
+    function closeEditOrderModal() {
+      document.getElementById('edit-order-modal').classList.remove('active');
     }
 
-    function saveStaffAssignment() {
-      const orderId = document.getElementById('modal-order-id').value;
-      const staffName = document.getElementById('modal-staff-name').value.trim() || 'Staff';
-      const now = new Date().toLocaleString();
+    function saveOrderModifications() {
+      const orderId = document.getElementById('edit-modal-order-id').value;
+      const refNo = document.getElementById('edit-ref-no').value.trim() || 'N/A';
+      const handlingStaff = document.getElementById('edit-handling-staff').value.trim() || 'Unassigned';
+      const guestName = document.getElementById('edit-guest-name').value.trim();
+      const tel = document.getElementById('edit-tel').value.trim();
+      const pickupDate = document.getElementById('edit-pickup-date').value.trim();
+      const pickupTime = document.getElementById('edit-pickup-time').value.trim();
+      const wording = document.getElementById('edit-wording').value;
+      const remarks = document.getElementById('edit-remarks').value;
+      const lastUpdated = formatDateTime24(new Date());
 
       db.ref('cake_submissions/' + orderId).update({
-        handlingStaff: staffName,
-        lastUpdated: now
+        refNo, handlingStaff, guestName, tel, pickupDate, pickupTime, wording, remarks, lastUpdated
       }, (error) => {
         if (!error) {
-          const sub = submissions.find(s => String(s.id) === String(orderId));
-          if (sub) {
-            sub.handlingStaff = staffName;
-            sub.lastUpdated = now;
-            downloadPdfByObject(sub);
-          }
+          alert("Order details updated successfully!");
+          closeEditOrderModal();
+        } else {
+          alert("Failed to update order.");
         }
       });
-      closeStaffModal();
     }
 
-    function clearSubmissions() {
-      if (confirm("Are you sure you want to clear all submitted orders from Firebase?")) {
-        db.ref('cake_submissions').remove();
-      }
+    function downloadCurrentModalPdf() {
+      const orderId = document.getElementById('edit-modal-order-id').value;
+      const sub = submissions.find(s => String(s.id) === String(orderId));
+      if (!sub) return;
+
+      // Construct object with active modal inputs
+      const tempSub = {
+        ...sub,
+        refNo: document.getElementById('edit-ref-no').value.trim() || 'N/A',
+        handlingStaff: document.getElementById('edit-handling-staff').value.trim() || 'Unassigned',
+        guestName: document.getElementById('edit-guest-name').value.trim(),
+        tel: document.getElementById('edit-tel').value.trim(),
+        pickupDate: document.getElementById('edit-pickup-date').value.trim(),
+        pickupTime: document.getElementById('edit-pickup-time').value.trim(),
+        wording: document.getElementById('edit-wording').value,
+        remarks: document.getElementById('edit-remarks').value
+      };
+
+      downloadPdfByObject(tempSub);
     }
 
     function downloadPdfByObject(sub) {
@@ -438,7 +529,8 @@
           <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
           <p style="color: #666; font-size: 12px; margin-bottom: 12px;">Submitted: ${sub.dateSubmitted} | Processed by: ${sub.handlingStaff || 'Unassigned'}</p>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Guest Name:</td><td>${sub.guestName}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Ref No:</td><td>${sub.refNo || 'N/A'}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Guest Name:</td><td>${sub.guestName}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td style="white-space: pre-wrap;">${sub.wording}</td></tr>
@@ -451,9 +543,11 @@
             </thead>
             <tbody>
       `;
-      sub.items.forEach(i => {
-        pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
-      });
+      if (sub.items) {
+        sub.items.forEach(i => {
+          pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
+        });
+      }
       pdfContent += `
             <tr style="font-weight: bold;"><td colspan="4" align="right">Total:</td><td align="right" style="color: #1b4332;">$${sub.totalAmount}</td></tr>
             </tbody>
@@ -468,6 +562,12 @@
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
       }).from(pdfContent).save();
+    }
+
+    function clearSubmissions() {
+      if (confirm("Are you sure you want to clear all submitted orders from Firebase?")) {
+        db.ref('cake_submissions').remove();
+      }
     }
 
     // --- ITEM CATALOG LOGIC ---
@@ -587,7 +687,11 @@
       e.preventDefault();
       const primary = document.getElementById('email-primary').value;
       const cc = document.getElementById('email-cc').value;
-      db.ref('cake_email').set({ primary, cc }, (err) => {
+      const publicKey = document.getElementById('email-publickey').value;
+      const serviceId = document.getElementById('email-serviceid').value;
+      const templateId = document.getElementById('email-templateid').value;
+
+      db.ref('cake_email').set({ primary, cc, publicKey, serviceId, templateId }, (err) => {
         if (!err) alert("Email settings updated on cloud!");
       });
     }
