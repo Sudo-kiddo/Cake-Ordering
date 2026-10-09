@@ -596,6 +596,8 @@
     }
 
     function downloadPdfByObject(sub) {
+      if (typeof html2pdf === 'undefined') return;
+
       let pdfContent = `
         <div style="padding: 24px; font-family: sans-serif;">
           <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
@@ -645,11 +647,14 @@
     function renderItems() {
       const tbody = document.getElementById('items-tbody');
       const badge = document.getElementById('catalog-count-badge');
+      if (!tbody) return;
+
       tbody.innerHTML = '';
-      badge.innerText = `${catalog.length} Items`;
+      if (badge) badge.innerText = `${catalog.length} Items`;
 
       catalog.forEach(item => {
-        const priceStr = item.prices.map(p => `${p.label}: $${p.price}`).join(' | ');
+        const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
+        const priceStr = prices.map(p => `${p.label}: $${p.price}`).join(' | ');
         tbody.innerHTML += `
           <tr>
             <td style="font-weight: 600;">${item.name}</td>
@@ -696,11 +701,13 @@
       const item = catalog.find(i => i.id === id);
       if (!item) return;
 
+      const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
+
       document.getElementById('edit-item-id').value = item.id;
       document.getElementById('item-name').value = item.name;
       document.getElementById('item-category').value = item.cat;
-      document.getElementById('item-price-standard').value = item.prices[0] ? item.prices[0].price : 0;
-      document.getElementById('item-price-large').value = item.prices[1] ? item.prices[1].price : "";
+      document.getElementById('item-price-standard').value = prices[0] ? prices[0].price : 0;
+      document.getElementById('item-price-large').value = prices[1] ? prices[1].price : "";
       
       document.getElementById('form-item-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Menu Item: ${item.name}`;
       document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Item';
@@ -724,8 +731,9 @@
     function renderPickupSettings() {
       document.getElementById('pickup-lead').value = pickupSettings.leadDays || 1;
       const container = document.getElementById('time-slot-container');
-      container.innerHTML = '';
+      if (!container) return;
 
+      container.innerHTML = '';
       const enabled = pickupSettings.enabledSlots || ALL_15MIN_SLOTS;
       ALL_15MIN_SLOTS.forEach(slot => {
         const checked = enabled.includes(slot) ? 'checked' : '';
@@ -793,27 +801,30 @@
       const currentOrigin = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
       const customerFormUrl = `${currentOrigin}/index.html`;
 
-      shareInput.value = customerFormUrl;
+      if (shareInput) shareInput.value = customerFormUrl;
 
       const qrContainer = document.getElementById('qrcode');
-      qrContainer.innerHTML = '';
-      new QRCode(qrContainer, {
-        text: customerFormUrl,
-        width: 180,
-        height: 180,
-        colorDark: "#1b4332",
-        colorLight: "#ffffff"
-      });
+      if (qrContainer && typeof QRCode !== 'undefined') {
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+          text: customerFormUrl,
+          width: 180,
+          height: 180,
+          colorDark: "#1b4332",
+          colorLight: "#ffffff"
+        });
+      }
     }
 
     function copyUrl() {
       const shareInput = document.getElementById('share-url');
-      shareInput.select();
-      document.execCommand('copy');
-      alert("Customer form link copied to clipboard!");
+      if (shareInput) {
+        shareInput.select();
+        document.execCommand('copy');
+        alert("Customer form link copied to clipboard!");
+      }
     }
 
-    // Initialize default catalog rendering on startup
     renderItems();
   </script>
 </body>
