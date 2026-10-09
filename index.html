@@ -142,7 +142,7 @@
       <p>Select your items and complete your details to send your order</p>
     </header>
 
-    <form id="cake-order-form" onsubmit="handleCustomerSubmit(event)">
+    <form id="cake-order-form" onsubmit="event.preventDefault(); handleCustomerSubmit();">
       <!-- Customer Information Card -->
       <div class="card">
         <div class="card-title">
@@ -168,7 +168,6 @@
             <select id="pickupTime" required></select>
           </div>
 
-          <!-- MULTILINE TEXTAREA FOR WORDING -->
           <div class="form-group full-width">
             <label for="wording">Wording on Cake</label>
             <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday John!&#10;Wish you happiness and healthy always!"></textarea>
@@ -221,7 +220,7 @@
       </div>
 
       <div style="text-align: center; margin-top: 30px;">
-        <button type="button" class="btn-checkout" onclick="handleCustomerSubmit(event)" style="max-width: 360px; margin: 0 auto;">
+        <button type="button" class="btn-checkout" onclick="handleCustomerSubmit()" style="max-width: 360px; margin: 0 auto;">
           <i class="fa-solid fa-paper-plane"></i> Submit Order
         </button>
       </div>
@@ -248,7 +247,7 @@
   <div class="cart-drawer" id="cart-drawer">
     <div class="drawer-header">
       <h3><i class="fa-solid fa-basket-shopping"></i> Your Order Cart</h3>
-      <button class="drawer-close-btn" onclick="closeCartDrawer()">&times;</button>
+      <button type="button" class="drawer-close-btn" onclick="closeCartDrawer()">&times;</button>
     </div>
     <div class="drawer-body" id="cart-drawer-body"></div>
     <div class="drawer-footer">
@@ -256,7 +255,7 @@
         <span style="font-weight: 600; color: var(--text-muted);">Estimated Total</span>
         <span style="font-weight: 800; font-size: 1.3rem; color: var(--primary);" id="drawer-total-price">$0</span>
       </div>
-      <button class="btn-checkout" onclick="closeCartDrawer()">
+      <button type="button" class="btn-checkout" onclick="closeCartDrawer()">
         Confirm Order Selection
       </button>
     </div>
@@ -267,7 +266,7 @@
     <i class="fa-solid fa-circle-check"></i>
     <h2>Order Submitted Successfully!</h2>
     <p>Thank you for your order. A PDF copy of your summary has been automatically saved to your device.</p>
-    <button class="btn-checkout" onclick="resetFormView()" style="max-width: 260px; margin: 0 auto;">
+    <button type="button" class="btn-checkout" onclick="resetFormView()" style="max-width: 260px; margin: 0 auto;">
       <i class="fa-solid fa-arrow-left"></i> Submit Another Order
     </button>
   </div>
@@ -611,9 +610,7 @@
       return `${datePrefix}${nextSeqStr}`;
     }
 
-    function handleCustomerSubmit(e) {
-      if (e) e.preventDefault();
-      
+    function handleCustomerSubmit() {
       const guestName = document.getElementById('guestName').value.trim();
       const tel = document.getElementById('tel').value.trim();
       const pickupDateVal = document.getElementById('pickupDate').value;
@@ -673,7 +670,7 @@
                 .catch(err => console.error('Email dispatch failed:', err));
             }
           } catch (e) {
-            console.warn("Email dispatch skipped due to missing config.", e);
+            console.warn("Email dispatch skipped.", e);
           }
 
           try {
