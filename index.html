@@ -4,9 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cake Ordering Form</title>
+  <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2pdf.js for Client-side PDF Generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Firebase JavaScript Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
     :root {
@@ -123,9 +129,6 @@
       .accordion-content { grid-template-columns: 1fr; }
     }
   </style>
-  <!-- Firebase Libraries -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
@@ -266,6 +269,23 @@
   </div>
 
   <script>
+    // --- FIREBASE CONFIGURATION (REPLACE WITH YOUR KEYS FROM FIREBASE CONSOLE) ---
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
     const DEFAULT_CATALOG = [
       { id: "item_1", name: "Green Tea Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
       { id: "item_2", name: "Jasmine Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
@@ -320,9 +340,7 @@
         const hStr = String(hour).padStart(2, '0');
         slots.push(`${hStr}:00`);
         if (hour < 24) {
-          slots.push(`${hStr}:15`);
-          slots.push(`${hStr}:30`);
-          slots.push(`${hStr}:45`);
+          slots.push(`${hStr}:15`); slots.push(`${hStr}:30`); slots.push(`${hStr}:45`);
         }
       }
       return slots;
@@ -330,15 +348,33 @@
 
     const ALL_15MIN_SLOTS = generate15MinTimeSlots();
 
-    let catalog = JSON.parse(localStorage.getItem('cake_catalog')) || DEFAULT_CATALOG;
-    let pickupSettings = JSON.parse(localStorage.getItem('cake_pickup')) || { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
-    let submissions = JSON.parse(localStorage.getItem('cake_submissions')) || [];
+    let catalog = DEFAULT_CATALOG;
+    let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
     let cart = {};
 
-    function initForm() {
+    // --- REALTIME LISTENERS FROM FIREBASE ---
+    db.ref('cake_catalog').on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        catalog = Array.isArray(val) ? val : Object.values(val);
+      } else {
+        db.ref('cake_catalog').set(DEFAULT_CATALOG);
+      }
+      renderFormCatalog();
+    });
+
+    db.ref('cake_pickup').on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        pickupSettings = val;
+        initPickupDateAndTime();
+      }
+    });
+
+    function initPickupDateAndTime() {
       const dateInput = document.getElementById('pickupDate');
       const minDate = new Date();
-      minDate.setDate(minDate.getDate() + pickupSettings.leadDays);
+      minDate.setDate(minDate.getDate() + (pickupSettings.leadDays || 1));
       
       const yyyy = minDate.getFullYear();
       const mm = String(minDate.getMonth() + 1).padStart(2, '0');
@@ -350,12 +386,15 @@
 
       const timeSelect = document.getElementById('pickupTime');
       timeSelect.innerHTML = '';
-      pickupSettings.enabledSlots.forEach(slot => {
+      const slots = pickupSettings.enabledSlots || ALL_15MIN_SLOTS;
+      slots.forEach(slot => {
         const opt = document.createElement('option');
         opt.value = slot; opt.innerText = slot;
         timeSelect.appendChild(opt);
       });
+    }
 
+    function renderFormCatalog() {
       ['whole', 'pastries', 'sweets', 'addons'].forEach(cat => {
         const catContainer = document.getElementById(`cat-${cat}`);
         if (!catContainer) return;
@@ -364,7 +403,6 @@
           catContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item));
         });
       });
-
       updateCartUI();
     }
 
@@ -530,15 +568,18 @@
         handlingStaff: "Unassigned", lastUpdated: new Date().toLocaleString()
       };
 
-      submissions.unshift(submission);
-      localStorage.setItem('cake_submissions', JSON.stringify(submissions));
-
-      generatePdf(submission);
-
-      document.getElementById('form-container').style.display = 'none';
-      document.getElementById('cart-float-bar').style.display = 'none';
-      document.getElementById('confirmation-screen').style.display = 'block';
-      window.scrollTo(0, 0);
+      // Push to Firebase Realtime Database
+      db.ref('cake_submissions/' + orderId).set(submission, (error) => {
+        if (error) {
+          alert("Submission failed. Please try again.");
+        } else {
+          generatePdf(submission);
+          document.getElementById('form-container').style.display = 'none';
+          document.getElementById('cart-float-bar').style.display = 'none';
+          document.getElementById('confirmation-screen').style.display = 'block';
+          window.scrollTo(0, 0);
+        }
+      });
     }
 
     function generatePdf(sub) {
@@ -586,10 +627,8 @@
       document.getElementById('confirmation-screen').style.display = 'none';
       document.getElementById('form-container').style.display = 'block';
       document.getElementById('cart-float-bar').style.display = 'flex';
-      initForm();
+      initPickupDateAndTime();
     }
-
-    initForm();
   </script>
 </body>
 </html>
