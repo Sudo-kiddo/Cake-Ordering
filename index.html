@@ -1,712 +1,425 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cake Ordering Form</title>
-  <!-- Google Fonts & Font Awesome Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- html2pdf.js for Client-side PDF Generation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <!-- EmailJS SDK for Instant Client-side Email Dispatch -->
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
-  <!-- Firebase JavaScript Libraries -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-  <style>
-    :root {
-      --primary: #1b4332;
-      --primary-hover: #143225;
-      --secondary: #2d6a4f;
-      --accent: #52b788;
-      --light-green: #d8f3dc;
-      --bg-cream: #f4f6f4;
-      --card-bg: #ffffff;
-      --text-dark: #2d3748;
-      --text-muted: #718096;
-      --border-color: #e2e8f0;
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --shadow-sm: 0 2px 4px rgba(27, 67, 50, 0.05);
-      --shadow-md: 0 4px 12px rgba(27, 67, 50, 0.08);
-      --shadow-lg: 0 10px 25px rgba(27, 67, 50, 0.12);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
-    body { background-color: var(--bg-cream); color: var(--text-dark); line-height: 1.5; padding-bottom: 100px; }
-    .container { max-width: 860px; margin: 24px auto; padding: 0 16px; }
-
-    header.form-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      color: white; padding: 32px 24px; border-radius: var(--radius-lg); margin-bottom: 24px;
-      box-shadow: var(--shadow-lg); text-align: center;
-    }
-    header.form-header h1 { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 6px; }
-    header.form-header p { color: var(--light-green); font-size: 0.95rem; font-weight: 300; }
-
-    .card { background: var(--card-bg); border-radius: var(--radius-md); padding: 24px; margin-bottom: 24px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-    .card-title { font-size: 1.15rem; font-weight: 600; color: var(--primary); margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--light-green); padding-bottom: 10px; }
-
-    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-    .full-width { grid-column: span 2; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
-    .form-group label { font-size: 0.88rem; font-weight: 600; color: var(--text-dark); }
-    .form-group input, .form-group textarea, .form-group select {
-      padding: 12px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm);
-      font-size: 0.95rem; outline: none; background-color: #fafafa; transition: all 0.2s ease;
-    }
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-      border-color: var(--secondary); background-color: #fff; box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
-    }
-
-    .category-accordion { border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 16px; overflow: hidden; background: white; }
-    .accordion-header { background: #f4f8f5; padding: 16px 20px; font-weight: 600; font-size: 1.05rem; color: var(--primary); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-    .accordion-header:hover { background: var(--light-green); }
-    .accordion-content { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-    .accordion-content.collapsed { display: none; }
-
-    .item-card { border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; justify-content: space-between; background: #ffffff; }
-    .item-card.has-in-cart { border-color: var(--accent); background-color: #f7fcf8; box-shadow: 0 0 0 1px var(--accent); }
-    .item-name { font-weight: 600; font-size: 0.98rem; color: var(--text-dark); margin-bottom: 4px; }
-    .item-price { font-size: 0.9rem; color: var(--secondary); font-weight: 700; margin-bottom: 10px; }
-    .item-actions { display: flex; gap: 8px; align-items: center; }
-    .size-select-box { flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; background: #ffffff; outline: none; }
-
-    .btn-add-cart {
-      background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px;
-      font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s, transform 0.1s;
-    }
-    .btn-add-cart:hover { background: var(--primary-hover); }
-    .btn-add-cart.added-flash { background: var(--accent) !important; color: var(--primary) !important; }
-
-    /* Floating Cart Bar */
-    .cart-float-bar {
-      position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 860px;
-      background: var(--primary); color: white; padding: 14px 20px; border-radius: 40px; box-shadow: 0 8px 24px rgba(27, 67, 50, 0.3);
-      display: flex; align-items: center; justify-content: space-between; z-index: 1000; cursor: pointer;
-    }
-    .cart-float-info { display: flex; align-items: center; gap: 12px; }
-    .cart-icon-wrapper { position: relative; font-size: 1.3rem; }
-    .cart-badge { position: absolute; top: -8px; right: -10px; background: var(--accent); color: var(--primary); font-weight: 800; font-size: 0.75rem; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .cart-total-price { font-weight: 700; font-size: 1.15rem; }
-    .cart-view-btn { background: rgba(255, 255, 255, 0.2); color: white; padding: 8px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-
-    /* Cart Drawer Modal */
-    .cart-drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-    .cart-drawer-overlay.active { opacity: 1; visibility: visible; }
-    .cart-drawer { position: fixed; top: 0; right: -420px; width: 100%; max-width: 420px; height: 100%; background: white; z-index: 2001; box-shadow: -5px 0 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    .cart-drawer.active { right: 0; }
-    .drawer-header { background: var(--primary); color: white; padding: 20px; display: flex; align-items: center; justify-content: space-between; }
-    .drawer-header h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
-    .drawer-close-btn { background: transparent; border: none; color: white; font-size: 1.4rem; cursor: pointer; }
-    .drawer-body { flex: 1; overflow-y: auto; padding: 20px; }
-    .drawer-footer { padding: 20px; border-top: 1px solid var(--border-color); background: #fafafa; }
-
-    .cart-item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border-color); gap: 12px; }
-    .cart-item-details { flex: 1; }
-    .cart-item-title { font-weight: 600; font-size: 0.95rem; color: var(--text-dark); margin-bottom: 2px; }
-    .cart-item-option { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
-    .cart-item-price { font-weight: 700; color: var(--secondary); font-size: 0.95rem; }
-
-    .cart-qty-picker { display: flex; align-items: center; border: 1.5px solid var(--primary); border-radius: 6px; overflow: hidden; background: #ffffff; height: 32px; }
-    .cart-qty-btn { width: 28px; height: 32px; border: none; background: #f0f4f1; color: var(--primary); font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .cart-qty-num { width: 36px; height: 32px; border: none; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--primary); background: #ffffff; line-height: 32px; }
-    .cart-remove-btn { color: #e63946; background: transparent; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; }
-
-    .btn-checkout { background: var(--primary); color: white; border: none; width: 100%; padding: 14px; border-radius: 30px; font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-    .btn-checkout:hover { background: var(--primary-hover); }
-
-    #confirmation-screen { display: none; text-align: center; padding: 60px 20px; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
-    #confirmation-screen i { font-size: 4rem; color: var(--accent); margin-bottom: 20px; }
-    #confirmation-screen h2 { font-size: 2rem; color: var(--primary); margin-bottom: 12px; }
-    #confirmation-screen p { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto 24px auto; }
-
-    @media (max-width: 600px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .full-width { grid-column: span 1; }
-      .accordion-content { grid-template-columns: 1fr; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gourmet Bakery - Online Order Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            800: '#1b4332',
+                            700: '#2d6a4f',
+                            500: '#52b788',
+                            100: '#d8f3dc',
+                            50: '#f0fdf4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .gradient-bg { background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%); }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen text-slate-800 pb-12">
 
-  <div class="container" id="form-container">
-    <header class="form-header">
-      <h1>Cake Ordering Form</h1>
-      <p>Select your items and complete your details to send your order</p>
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-cake-candles text-2xl text-forest-100"></i>
+                <h1 class="text-xl md:text-2xl font-bold tracking-tight">Gourmet Cake Order Portal</h1>
+            </div>
+            <a href="admin.html" class="bg-forest-500 hover:bg-forest-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2 shadow-md">
+                <i class="fa-solid fa-user-gear"></i>
+                <span>Staff Portal</span>
+            </a>
+        </div>
     </header>
 
-    <form id="cake-order-form" onsubmit="handleCustomerSubmit(event)">
-      <!-- Customer Information Card -->
-      <div class="card">
-        <div class="card-title">
-          <span><i class="fa-solid fa-user-tag"></i> Customer & Order Details</span>
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="guestName">Guest Name *</label>
-            <input type="text" id="guestName" required placeholder="e.g. Edward">
-          </div>
-          <div class="form-group">
-            <label for="tel">Contact Tel *</label>
-            <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
-          </div>
-          
-          <div class="form-group">
-            <label for="pickupDate">Pickup Date *</label>
-            <input type="date" id="pickupDate" required>
-          </div>
-
-          <div class="form-group">
-            <label for="pickupTime">Pickup Time *</label>
-            <select id="pickupTime" required></select>
-          </div>
-
-          <!-- MULTILINE TEXTAREA FOR WORDING -->
-          <div class="form-group full-width">
-            <label for="wording">Wording on Cake</label>
-            <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday John!&#10;Wish you happiness and healthy always!"></textarea>
-          </div>
-
-          <div class="form-group full-width">
-            <label for="remarks">Remarks</label>
-            <textarea id="remarks" rows="2" placeholder="Any special requests or notes..."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Item Catalog Accordions -->
-      <div class="card">
-        <div class="card-title">
-          <span><i class="fa-solid fa-cake-candles"></i> Select Items</span>
-        </div>
-
-        <div class="category-accordion">
-          <div class="accordion-header" onclick="toggleAccordion('cat-whole')">
-            <span><i class="fa-solid fa-cake-candles" style="margin-right: 8px;"></i> Whole & Specialty Cakes</span>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-          <div class="accordion-content" id="cat-whole"></div>
-        </div>
-
-        <div class="category-accordion">
-          <div class="accordion-header" onclick="toggleAccordion('cat-pastries')">
-            <span><i class="fa-solid fa-bread-slice" style="margin-right: 8px;"></i> Pastries, Puffs & Slices</span>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-          <div class="accordion-content collapsed" id="cat-pastries"></div>
-        </div>
-
-        <div class="category-accordion">
-          <div class="accordion-header" onclick="toggleAccordion('cat-sweets')">
-            <span><i class="fa-solid fa-cookie-bite" style="margin-right: 8px;"></i> Cookies, Sweets & Pantry</span>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-          <div class="accordion-content collapsed" id="cat-sweets"></div>
-        </div>
-
-        <div class="category-accordion">
-          <div class="accordion-header" onclick="toggleAccordion('cat-addons')">
-            <span><i class="fa-solid fa-gift" style="margin-right: 8px;"></i> Add-ons & Accessories</span>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-          <div class="accordion-content collapsed" id="cat-addons"></div>
-        </div>
-      </div>
-
-      <div style="text-align: center; margin-top: 30px;">
-        <button type="submit" class="btn-checkout" style="max-width: 360px; margin: 0 auto;">
-          <i class="fa-solid fa-paper-plane"></i> Submit Order
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Floating Cart Bar at Bottom -->
-  <div class="cart-float-bar" id="cart-float-bar" onclick="openCartDrawer()">
-    <div class="cart-float-info">
-      <div class="cart-icon-wrapper">
-        <i class="fa-solid fa-basket-shopping"></i>
-        <div class="cart-badge" id="cart-badge-count">0</div>
-      </div>
-      <div class="cart-total-price" id="cart-float-total">$0</div>
-    </div>
-    <div class="cart-view-btn">
-      <span>View Cart</span>
-      <i class="fa-solid fa-arrow-right"></i>
-    </div>
-  </div>
-
-  <!-- Slide-out Cart Drawer -->
-  <div class="cart-drawer-overlay" id="cart-overlay" onclick="closeCartDrawer()"></div>
-  <div class="cart-drawer" id="cart-drawer">
-    <div class="drawer-header">
-      <h3><i class="fa-solid fa-basket-shopping"></i> Your Order Cart</h3>
-      <button class="drawer-close-btn" onclick="closeCartDrawer()">&times;</button>
-    </div>
-    <div class="drawer-body" id="cart-drawer-body"></div>
-    <div class="drawer-footer">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <span style="font-weight: 600; color: var(--text-muted);">Estimated Total</span>
-        <span style="font-weight: 800; font-size: 1.3rem; color: var(--primary);" id="drawer-total-price">$0</span>
-      </div>
-      <button class="btn-checkout" onclick="closeCartDrawer()">
-        Confirm Order Selection
-      </button>
-    </div>
-  </div>
-
-  <!-- Confirmation Screen -->
-  <div class="container" id="confirmation-screen">
-    <i class="fa-solid fa-circle-check"></i>
-    <h2>Order Submitted Successfully!</h2>
-    <p>Thank you for your order. A PDF copy of your summary has been automatically saved to your device.</p>
-    <button class="btn-checkout" onclick="resetFormView()" style="max-width: 260px; margin: 0 auto;">
-      <i class="fa-solid fa-arrow-left"></i> Submit Another Order
-    </button>
-  </div>
-
-  <script>
-    // --- FIREBASE CONFIGURATION (REPLACE WITH YOUR KEYS FROM FIREBASE CONSOLE) ---
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
-
-    const DEFAULT_CATALOG = [
-      { id: "item_1", name: "Green Tea Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_2", name: "Jasmine Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_3", name: "Blueberry Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_4", name: "Mango Dome", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_5", name: "Strawberry Olive Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_6", name: "Durian Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 88 }, { label: "Whole Cake", price: 380 }] },
-      { id: "item_7", name: "Seasonal Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 68 }, { label: "Whole Cake", price: 360 }] },
-      { id: "item_8", name: "Berry Pandan", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_9", name: "Earl Grey Tea Chiffon Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_10", name: "Berrylicious Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_11", name: "Peacheous Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_12", name: "Mango Snow", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_13", name: "Forêt Noire (Contains alcohol)", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_14", name: "Durian Pandan Opera Cake", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
-      { id: "item_15", name: "D197 Durian Mille Feuille", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
-      { id: "item_16", name: "Durian Cream Cake Box", cat: "whole", prices: [{ label: "1 Box", price: 180 }] },
-      { id: "item_17", name: "Durian Pandan 3D Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
-      { id: "item_18", name: "Durian Burnt Basque Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 88 }, { label: "Whole Cake", price: 420 }] },
-      { id: "item_19", name: "Lotus Biscoff Durian Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 198 }, { label: "Whole Cake", price: 380 }] },
-      { id: "item_20", name: "Durian Snowy Cheddar Cheese Pandan Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 210 }] },
-      { id: "item_21", name: "Durian Serradura", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
-      { id: "item_22", name: "Melon Mousse Cake", cat: "whole", prices: [{ label: "Slice", price: 98 }, { label: "Whole Cake", price: 520 }] },
-      { id: "item_23", name: "Taro Cream Cake", cat: "whole", prices: [{ label: "Slice", price: 68 }, { label: "Whole Cake", price: 360 }] },
-      { id: "item_24", name: "Pandan Durian Roulade (1pc)", cat: "pastries", prices: [{ label: "1 pc", price: 100 }] },
-      { id: "item_25", name: "D197 Durian Cheese Puff (8pcs)", cat: "pastries", prices: [{ label: "8 pcs", price: 228 }] },
-      { id: "item_26", name: "Mini D24 Durian Cheese Tart (12pcs)", cat: "pastries", prices: [{ label: "12 pcs", price: 168 }] },
-      { id: "item_27", name: "Pandan Mango Cream Roll", cat: "pastries", prices: [{ label: "1 pc", price: 60 }] },
-      { id: "item_28", name: "Pandan Chiffon Cake", cat: "pastries", prices: [{ label: "1 pc", price: 138 }] },
-      { id: "item_29", name: "Scone (4pcs)", cat: "pastries", prices: [{ label: "4 pcs", price: 72 }] },
-      { id: "item_30", name: "Blueberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_31", name: "Chocolate Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_32", name: "Mango Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_33", name: "Melon Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_34", name: "Strawberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_35", name: "Earl Grey Roulade with Mochi", cat: "pastries", prices: [{ label: "1 pc", price: 68 }] },
-      { id: "item_36", name: "Durian Serradura Cup", cat: "pastries", prices: [{ label: "1 Cup", price: 88 }] },
-      { id: "item_37", name: "Tiramisu", cat: "pastries", prices: [{ label: "1 Cup", price: 60 }] },
-      { id: "item_38", name: "Coffee Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
-      { id: "item_39", name: "XO Sauce (238g)", cat: "sweets", prices: [{ label: "1 Jar", price: 238 }] },
-      { id: "item_40", name: "A&B Crystal Walnut (0.5lb)", cat: "sweets", prices: [{ label: "0.5 lb", price: 198 }] },
-      { id: "item_41", name: "Salted Egg & Sakura Shrimp Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
-      { id: "item_42", name: "Butterfly Cookies", cat: "sweets", prices: [{ label: "1 Box", price: 98 }] },
-      { id: "item_43", name: "Assorted Chocolate (9pcs)", cat: "sweets", prices: [{ label: "9 pcs", price: 288 }] },
-      { id: "item_44", name: "ICONIC Eats Birthday Cake", cat: "addons", prices: [{ label: "Standard", price: 0 }] },
-      { id: "item_45", name: "Thermal Bag & Ice Gel", cat: "addons", prices: [{ label: "1 Set", price: 50 }] }
-    ];
-
-    function generate15MinTimeSlots() {
-      const slots = [];
-      for (let hour = 10; hour <= 24; hour++) {
-        const hStr = String(hour).padStart(2, '0');
-        slots.push(`${hStr}:00`);
-        if (hour < 24) {
-          slots.push(`${hStr}:15`); slots.push(`${hStr}:30`); slots.push(`${hStr}:45`);
-        }
-      }
-      return slots;
-    }
-
-    const ALL_15MIN_SLOTS = generate15MinTimeSlots();
-
-    let catalog = DEFAULT_CATALOG;
-    let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
-    let emailSettings = {};
-    let submissionsList = [];
-    let cart = {};
-
-    // --- FORMAT DATEDDMMYYYY HH:MM (24-HOUR STYLE) ---
-    function formatDateTime24(dateObj) {
-      const dd = String(dateObj.getDate()).padStart(2, '0');
-      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const yyyy = dateObj.getFullYear();
-      const hh = String(dateObj.getHours()).padStart(2, '0');
-      const min = String(dateObj.getMinutes()).padStart(2, '0');
-      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
-    }
-
-    // --- REALTIME LISTENERS FROM FIREBASE ---
-    db.ref('cake_catalog').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        catalog = Array.isArray(val) ? val : Object.values(val);
-      } else {
-        db.ref('cake_catalog').set(DEFAULT_CATALOG);
-      }
-      renderFormCatalog();
-    });
-
-    db.ref('cake_pickup').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        pickupSettings = val;
-        initPickupDateAndTime();
-      }
-    });
-
-    db.ref('cake_email').on('value', (snapshot) => {
-      const val = snapshot.val();
-      if (val) {
-        emailSettings = val;
-        if (emailSettings.publicKey) {
-          emailjs.init(emailSettings.publicKey);
-        }
-      }
-    });
-
-    db.ref('cake_submissions').on('value', (snapshot) => {
-      const val = snapshot.val();
-      submissionsList = val ? Object.values(val) : [];
-    });
-
-    function initPickupDateAndTime() {
-      const dateInput = document.getElementById('pickupDate');
-      const minDate = new Date();
-      minDate.setDate(minDate.getDate() + (pickupSettings.leadDays || 1));
-      
-      const yyyy = minDate.getFullYear();
-      const mm = String(minDate.getMonth() + 1).padStart(2, '0');
-      const dd = String(minDate.getDate()).padStart(2, '0');
-      
-      const minDateStr = `${yyyy}-${mm}-${dd}`;
-      dateInput.min = minDateStr;
-      dateInput.value = minDateStr;
-
-      const timeSelect = document.getElementById('pickupTime');
-      timeSelect.innerHTML = '';
-      const slots = pickupSettings.enabledSlots || ALL_15MIN_SLOTS;
-      slots.forEach(slot => {
-        const opt = document.createElement('option');
-        opt.value = slot; opt.innerText = slot;
-        timeSelect.appendChild(opt);
-      });
-    }
-
-    function renderFormCatalog() {
-      ['whole', 'pastries', 'sweets', 'addons'].forEach(cat => {
-        const catContainer = document.getElementById(`cat-${cat}`);
-        if (!catContainer) return;
-        catContainer.innerHTML = '';
-        catalog.filter(i => i.cat === cat).forEach(item => {
-          catContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item));
-        });
-      });
-      updateCartUI();
-    }
-
-    function createItemCardHtml(item) {
-      const priceText = item.prices.map(p => `$${p.price}`).join(' / ');
-      let optionsHtml = item.prices.length > 1 
-        ? `<select class="size-select-box" id="select_size_${item.id}">
-             ${item.prices.map((p, idx) => `<option value="${idx}">${p.label} - $${p.price}</option>`).join('')}
-           </select>`
-        : `<span style="font-size:0.8rem; color:#666;">${item.prices[0].label}</span>`;
-
-      return `
-        <div class="item-card" id="card_${item.id}">
-          <div>
-            <div class="item-name">${item.name}</div>
-            <div class="item-price">${priceText}</div>
-          </div>
-          <div class="item-actions">
-            ${optionsHtml}
-            <button type="button" class="btn-add-cart" id="btn_add_${item.id}" onclick="addToCart('${item.id}')">
-              <i class="fa-solid fa-cart-plus"></i> Add
-            </button>
-          </div>
-        </div>
-      `;
-    }
-
-    function toggleAccordion(id) {
-      document.getElementById(id).classList.toggle('collapsed');
-    }
-
-    function addToCart(itemId) {
-      const item = catalog.find(i => i.id === itemId);
-      const sizeSelect = document.getElementById(`select_size_${itemId}`);
-      const sizeIdx = sizeSelect ? parseInt(sizeSelect.value) || 0 : 0;
-      const cartKey = `${itemId}_${sizeIdx}`;
-
-      if (cart[cartKey]) {
-        cart[cartKey].qty += 1;
-      } else {
-        cart[cartKey] = {
-          cartKey: cartKey, itemId: itemId, name: item.name,
-          option: item.prices[sizeIdx].label, price: item.prices[sizeIdx].price, qty: 1
-        };
-      }
-
-      const btn = document.getElementById(`btn_add_${itemId}`);
-      if (btn) {
-        btn.classList.add('added-flash');
-        btn.innerHTML = `<i class="fa-solid fa-check"></i> Added`;
-        setTimeout(() => {
-          btn.classList.remove('added-flash');
-          btn.innerHTML = `<i class="fa-solid fa-cart-plus"></i> Add`;
-        }, 800);
-      }
-
-      updateCartUI();
-    }
-
-    function updateCartQty(cartKey, delta) {
-      if (!cart[cartKey]) return;
-      cart[cartKey].qty += delta;
-      if (cart[cartKey].qty <= 0) delete cart[cartKey];
-      updateCartUI();
-    }
-
-    function removeFromCart(cartKey) {
-      delete cart[cartKey];
-      updateCartUI();
-    }
-
-    function updateCartUI() {
-      const cartItems = Object.values(cart);
-      let totalQty = 0, totalPrice = 0;
-
-      cartItems.forEach(item => {
-        totalQty += item.qty;
-        totalPrice += (item.price * item.qty);
-      });
-
-      document.getElementById('cart-badge-count').innerText = totalQty;
-      document.getElementById('cart-float-total').innerText = `$${totalPrice}`;
-      document.getElementById('drawer-total-price').innerText = `$${totalPrice}`;
-
-      catalog.forEach(item => {
-        const card = document.getElementById(`card_${item.id}`);
-        const hasItem = cartItems.some(ci => ci.itemId === item.id);
-        if (card) {
-          if (hasItem) card.classList.add('has-in-cart');
-          else card.classList.remove('has-in-cart');
-        }
-      });
-
-      const drawerBody = document.getElementById('cart-drawer-body');
-      if (cartItems.length === 0) {
-        drawerBody.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); margin-top: 60px;">
-            <i class="fa-solid fa-basket-shopping" style="font-size: 3rem; margin-bottom: 12px; color: var(--border-color);"></i>
-            <p>Your cart is empty.</p>
-          </div>
-        `;
-      } else {
-        drawerBody.innerHTML = '';
-        cartItems.forEach(item => {
-          drawerBody.innerHTML += `
-            <div class="cart-item-row">
-              <div class="cart-item-details">
-                <div class="cart-item-title">${item.name}</div>
-                <div class="cart-item-option">${item.option} ($${item.price})</div>
-                <div class="cart-item-price">$${item.price * item.qty}</div>
-              </div>
-              <div class="cart-qty-picker">
-                <button type="button" class="cart-qty-btn" onclick="updateCartQty('${item.cartKey}', -1)">-</button>
-                <div class="cart-qty-num">${item.qty}</div>
-                <button type="button" class="cart-qty-btn" onclick="updateCartQty('${item.cartKey}', 1)">+</button>
-              </div>
-              <button type="button" class="cart-remove-btn" onclick="removeFromCart('${item.cartKey}')"><i class="fa-solid fa-trash-can"></i></button>
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        <form id="orderForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+            
+            <!-- Customer Information Card -->
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-forest-800 border-b border-slate-100 pb-3 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-user text-forest-500"></i> Customer & Pickup Details
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Guest Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="guestName" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 focus:border-forest-500 outline-none transition" placeholder="e.g. John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Contact Phone / WhatsApp <span class="text-red-500">*</span></label>
+                        <input type="tel" id="contactPhone" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 focus:border-forest-500 outline-none transition" placeholder="e.g. +852 9123 4567">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Email Address <span class="text-red-500">*</span></label>
+                        <input type="email" id="contactEmail" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 focus:border-forest-500 outline-none transition" placeholder="john@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pickup Location / Hotel <span class="text-red-500">*</span></label>
+                        <select id="pickupLocation" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 focus:border-forest-500 outline-none transition bg-white">
+                            <option value="">Select pickup location...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pickup Date <span class="text-red-500">*</span></label>
+                        <input type="date" id="pickupDate" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 focus:border-forest-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Pickup Time Slot <span class="text-red-500">*</span></label>
+                        <select id="pickupTime" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 focus:border-forest-500 outline-none transition bg-white">
+                            <option value="">Select pickup time...</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-          `;
-        });
-      }
-    }
 
-    function openCartDrawer() {
-      document.getElementById('cart-overlay').classList.add('active');
-      document.getElementById('cart-drawer').classList.add('active');
-    }
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-6">
+                    <h2 class="text-lg font-bold text-forest-800 flex items-center gap-2">
+                        <i class="fa-solid fa-utensils text-forest-500"></i> Menu Items Selection (45 Available)
+                    </h2>
+                    <span id="catalogCountBadge" class="bg-forest-100 text-forest-800 text-xs font-semibold px-2.5 py-1 rounded-full">Loading...</span>
+                </div>
 
-    function closeCartDrawer() {
-      document.getElementById('cart-overlay').classList.remove('active');
-      document.getElementById('cart-drawer').classList.remove('active');
-    }
+                <!-- Search and Filter Bar -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <input type="text" id="searchInput" oninput="renderCustomerCatalog()" placeholder="Search items by name or code..." class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-forest-500 outline-none">
+                    </div>
+                    <div>
+                        <select id="categoryFilter" onchange="renderCustomerCatalog()" class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-forest-500 outline-none bg-white">
+                            <option value="ALL">All Categories</option>
+                            <option value="Signature Cakes">Signature Cakes</option>
+                            <option value="Cheesecakes">Cheesecakes</option>
+                            <option value="Tarts & Pies">Tarts & Pies</option>
+                            <option value="Pastries & Bakery">Pastries & Bakery</option>
+                        </select>
+                    </div>
+                </div>
 
-    function formatDateDisplay(yyyyMmDd) {
-      if (!yyyyMmDd) return '';
-      const parts = yyyyMmDd.split('-');
-      return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
-    }
+                <div id="catalogList" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                    <!-- Dynamic Catalog Rendered Here -->
+                </div>
+            </div>
 
-    // --- GENERATE SEQUENTIAL ORDER ID (YYYYMMDD001, YYYYMMDD002, ...) ---
-    function generateNextOrderId() {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const datePrefix = `${yyyy}${mm}${dd}`;
+            <!-- Custom Wording & Remarks -->
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h2 class="text-lg font-bold text-forest-800 border-b border-slate-100 pb-3 mb-6 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-nib text-forest-500"></i> Cake Wording & Special Requests
+                </h2>
 
-      // Find all existing orders starting with today's date prefix
-      const todayOrders = submissionsList.filter(s => String(s.id).startsWith(datePrefix));
-      let maxSeq = 0;
-      todayOrders.forEach(s => {
-        const seqStr = String(s.id).substring(8);
-        const seqNum = parseInt(seqStr, 10);
-        if (!isNaN(seqNum) && seqNum > maxSeq) {
-          maxSeq = seqNum;
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Chocolate Plaque Wording (Optional)</label>
+                        <input type="text" id="cakeWording" maxlength="60" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 outline-none" placeholder="e.g. Happy Birthday Sarah! (Max 60 chars)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Special Instructions / Dietary Requirements</label>
+                        <textarea id="remarks" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-forest-500 outline-none" placeholder="e.g. Less sweet, candle count (1 Large, 2 Small), allergy notices..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-forest-800 text-white p-6 md:p-8 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <p class="text-sm text-forest-100">Total Selection</p>
+                    <p id="orderSummaryText" class="text-xl font-bold text-white">0 Items selected</p>
+                    <p id="orderTotalPrice" class="text-2xl font-extrabold text-forest-100 mt-1">$0 HKD</p>
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full md:w-auto bg-forest-500 hover:bg-forest-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2 text-lg">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>Submit Cake Order</span>
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        // Default 45 Items Master List
+        const DEFAULT_CATALOG = [
+            { id: "C01", code: "C01", name: "Valrhona Dark Chocolate Truffle Cake", price: 380, category: "Signature Cakes", description: "70% Dark chocolate ganache with moist sponge" },
+            { id: "C02", code: "C02", name: "Japanese Matcha & Red Bean Mousse Cake", price: 360, category: "Signature Cakes", description: "Uji Matcha mousse with sweet Hokkaido red bean" },
+            { id: "C03", code: "C03", name: "Fresh Strawberries Shortcake", price: 340, category: "Signature Cakes", description: "Fluffy sponge layered with fresh Japanese strawberries" },
+            { id: "C04", code: "C04", name: "Mango Passionfruit Chiffon Cake", price: 320, category: "Signature Cakes", description: "Light chiffon cake with tropical mango passionfruit cream" },
+            { id: "C05", code: "C05", name: "Classic Earl Grey Tea Cake", price: 330, category: "Signature Cakes", description: "Infused with aromatic Twinings Earl Grey tea" },
+            { id: "C06", code: "C06", name: "Salted Caramel Macadamia Nut Cake", price: 370, category: "Signature Cakes", description: "Crunchy toasted macadamia with housemade salted caramel" },
+            { id: "C07", code: "C07", name: "Classic Italian Tiramisu Cake", price: 350, category: "Signature Cakes", description: "Mascarpone cream infused with espresso & dark rum" },
+            { id: "C08", code: "C08", name: "Raspberry Lychee Rose Cake", price: 360, category: "Signature Cakes", description: "Floral rose sponge layered with fresh lychee and raspberries" },
+            { id: "C09", code: "C09", name: "Pistachio & Mixed Berry Cake", price: 390, category: "Signature Cakes", description: "Sicilian pistachio cream with fresh wild berries" },
+            { id: "C10", code: "C10", name: "Black Forest Classic Gateau", price: 350, category: "Signature Cakes", description: "Chocolate sponge with Kirsch-soaked cherries" },
+            { id: "C11", code: "C11", name: "Hazelnut Praline Crunchy Cake", price: 380, category: "Signature Cakes", description: "Crispy feuilletine base with gianduja chocolate mousse" },
+            { id: "C12", code: "C12", name: "Lemon Meringue Chiffon Cake", price: 310, category: "Signature Cakes", description: "Tangy curd with torched Swiss meringue top" },
+            { id: "C13", code: "C13", name: "Chestnut Mont Blanc Cake", price: 400, category: "Signature Cakes", description: "French chestnut vermicelli with light vanilla cream" },
+            { id: "C14", code: "C14", name: "Oolong Tea & White Peach Cake", price: 360, category: "Signature Cakes", description: "Taiwanese Oolong tea chiffon with juicy white peach slices" },
+            { id: "C15", code: "C15", name: "Belgian Fudge Chocolate Cake", price: 340, category: "Signature Cakes", description: "Rich, dense chocolate sponge with velvety Belgian fudge" },
+
+            { id: "K01", code: "K01", name: "Basque Burnt Cheesecake", price: 280, category: "Cheesecakes", description: "Creamy caramelized top signature cheesecake" },
+            { id: "K02", code: "K02", name: "New York Vanilla Cheesecake", price: 300, category: "Cheesecakes", description: "Traditional dense cheesecake with graham cracker crust" },
+            { id: "K03", code: "K03", name: "Japanese Souffle Cotton Cheesecake", price: 250, category: "Cheesecakes", description: "Ultra light and pillowy soft melt-in-mouth cake" },
+            { id: "K04", code: "K04", name: "Blueberry Swirl Cheesecake", price: 310, category: "Cheesecakes", description: "Classic NY cheesecake swirled with wild blueberry compote" },
+            { id: "K05", code: "K05", name: "Durian D24 Cream Cheesecake", price: 360, category: "Cheesecakes", description: "Rich durian flesh folded into smooth cream cheese" },
+            { id: "K06", code: "K06", name: "Matcha Espresso Double Cheesecake", price: 330, category: "Cheesecakes", description: "Layered unbaked matcha and baked espresso cheesecake" },
+            { id: "K07", code: "K07", name: "Lotus Biscoff Cookie Butter Cheesecake", price: 320, category: "Cheesecakes", description: "Speculoos crust and Biscoff spread swirl" },
+            { id: "K08", code: "K08", name: "Oreo Cookies & Cream Cheesecake", price: 290, category: "Cheesecakes", description: "Crushed Oreo cookies folded into cream cheese" },
+            { id: "K09", code: "K09", name: "Mango Unbaked Cold Cheesecake", price: 300, category: "Cheesecakes", description: "Refreshing unbaked cheesecake topped with fresh mango cubes" },
+            { id: "K10", code: "K10", name: "Yuzu Honey Light Cheesecake", price: 320, category: "Cheesecakes", description: "Japanese Yuzu citrus honey infused cream cheesecake" },
+
+            { id: "T01", code: "T01", name: "French Lemon Custard Tart", price: 220, category: "Tarts & Pies", description: "Buttery tart shell filled with tangy zesty lemon curd" },
+            { id: "T02", code: "T02", name: "Fresh Mixed Fruit Custard Tart", price: 260, category: "Tarts & Pies", description: "Seasonal berries, kiwi, and mango over vanilla pastry cream" },
+            { id: "T03", code: "T03", name: "Dark Chocolate Salted Caramel Tart", price: 240, category: "Tarts & Pies", description: "70% dark chocolate ganache over gooey salted caramel" },
+            { id: "T04", code: "T04", name: "Japanese Shine Muscat Grape Tart", price: 350, category: "Tarts & Pies", description: "Premium sweet Shine Muscat grapes over almond cream" },
+            { id: "T05", code: "T05", name: "Kyoto Uji Matcha Tart", price: 250, category: "Tarts & Pies", description: "Rich rich green tea ganache in charcoal pastry shell" },
+            { id: "T06", code: "T06", name: "Classic Pecan Nut Pie", price: 230, category: "Tarts & Pies", description: "Traditional American pecan pie with bourbon vanilla" },
+            { id: "T07", code: "T07", name: "Fresh Strawberry Custard Tart", price: 270, category: "Tarts & Pies", description: "Juicy sweet strawberries over rich custard cream base" },
+            { id: "T08", code: "T08", name: "Caramelized Apple Cinnamon Tart", price: 220, category: "Tarts & Pies", description: "Sauteed Granny Smith apples with cinnamon spice" },
+
+            { id: "P01", code: "P01", name: "Butter Croissant Box (6 pcs)", price: 120, category: "Pastries & Bakery", description: "French AOP butter flaky golden croissants" },
+            { id: "P02", code: "P02", name: "Pain au Chocolat Box (6 pcs)", price: 135, category: "Pastries & Bakery", description: "Flaky puff pastry with Belgian dark chocolate sticks" },
+            { id: "P03", code: "P03", name: "Vanilla Bean Choux Puff Box (4 pcs)", price: 110, category: "Pastries & Bakery", description: "Crispy craquelin puff filled with real Madagascar vanilla" },
+            { id: "P04", code: "P04", name: "Assorted French Macarons (12 pcs)", price: 180, category: "Pastries & Bakery", description: "12 chef selection seasonal flavor macaron gift box" },
+            { id: "P05", code: "P05", name: "Almond Cream Croissant Box (4 pcs)", price: 130, category: "Pastries & Bakery", description: "Twice-baked croissant topped with toasted sliced almonds" },
+            { id: "P06", code: "P06", name: "Cinnamon Roll Box (4 pcs)", price: 100, category: "Pastries & Bakery", description: "Soft cinnamon brioche rolls with cream cheese frosting" },
+            { id: "P07", code: "P07", name: "Mini Fruit Danish Assortment (8 pcs)", price: 150, category: "Pastries & Bakery", description: "Mini flaky pastries topped with berries and custard" },
+            { id: "P08", code: "P08", name: "Dark Chocolate Brownie Slice Box (4 pcs)", price: 115, category: "Pastries & Bakery", description: "Fudgy Belgian dark chocolate walnut brownies" },
+            { id: "P09", code: "P09", name: "Scones with Clotted Cream & Jam (4 pcs)", price: 120, category: "Pastries & Bakery", description: "Classic English buttery scones with Devonshire cream" },
+            { id: "P10", code: "P10", name: "Pistachio Croissant Roll (3 pcs)", price: 140, category: "Pastries & Bakery", description: "New York style circular croissant filled with pistachio cream" },
+            { id: "P11", code: "P11", name: "Tiramisu Choux Cream Puff (4 pcs)", price: 125, category: "Pastries & Bakery", description: "Crispy choux filled with mascarpone espresso cream" },
+            { id: "P12", code: "P12", name: "Matcha Latte Craquelin Choux (4 pcs)", price: 120, category: "Pastries & Bakery", description: "Green tea craquelin puff with matcha cream" }
+        ];
+
+        // Firebase Config Setup
+        const firebaseConfig = {
+            databaseURL: "https://cakeorderapp-default-rtdb.firebaseio.com/" 
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
-      });
+        const db = firebase.database();
 
-      const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
-      return `${datePrefix}${nextSeqStr}`;
-    }
+        let currentCatalog = [...DEFAULT_CATALOG];
+        let selectedQuantities = {};
 
-    function handleCustomerSubmit(e) {
-      e.preventDefault();
-      const items = Object.values(cart);
-      if (items.length === 0) {
-        alert("Your cart is empty! Please add at least one item.");
-        openCartDrawer();
-        return;
-      }
+        // Auto Sync/Seed database with 45 items if empty or incomplete
+        function initializeCatalog() {
+            db.ref('cake_catalog').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && Object.keys(data).length >= 45) {
+                    currentCatalog = Object.keys(data).map(key => ({ id: key, ...data[key] }));
+                } else {
+                    // Seed database
+                    const updates = {};
+                    DEFAULT_CATALOG.forEach(item => {
+                        updates['cake_catalog/' + item.id] = item;
+                    });
+                    db.ref().update(updates);
+                    currentCatalog = [...DEFAULT_CATALOG];
+                }
+                renderCustomerCatalog();
+            });
 
-      const guestName = document.getElementById('guestName').value;
-      const tel = document.getElementById('tel').value;
-      const pickupDate = formatDateDisplay(document.getElementById('pickupDate').value);
-      const pickupTime = document.getElementById('pickupTime').value;
-      const wording = document.getElementById('wording').value || 'None';
-      const remarks = document.getElementById('remarks').value || 'None';
-
-      const orderId = generateNextOrderId();
-      const totalAmount = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-      const formattedTimestamp = formatDateTime24(new Date());
-
-      const submission = {
-        id: orderId,
-        refNo: "N/A",
-        guestName, tel, pickupDate, pickupTime, wording, remarks,
-        items: items.map(i => ({ name: i.name, option: i.option, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
-        totalAmount,
-        dateSubmitted: formattedTimestamp,
-        handlingStaff: "Unassigned",
-        lastUpdated: formattedTimestamp
-      };
-
-      // Push to Firebase Realtime Database
-      db.ref('cake_submissions/' + orderId).set(submission, (error) => {
-        if (error) {
-          alert("Submission failed. Please try again.");
-        } else {
-          // Trigger Email Dispatch via EmailJS if configured
-          if (emailSettings.serviceId && emailSettings.templateId) {
-            const templateParams = {
-              to_email: emailSettings.primary,
-              cc_email: emailSettings.cc || '',
-              order_id: submission.id,
-              guest_name: submission.guestName,
-              tel: submission.tel,
-              pickup_date: submission.pickupDate,
-              pickup_time: submission.pickupTime,
-              wording: submission.wording,
-              remarks: submission.remarks,
-              total_amount: submission.totalAmount
-            };
-            emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
-              .then(() => console.log('Instant email sent successfully'))
-              .catch(err => console.error('Email dispatch failed:', err));
-          }
-
-          generatePdf(submission);
-          document.getElementById('form-container').style.display = 'none';
-          document.getElementById('cart-float-bar').style.display = 'none';
-          document.getElementById('confirmation-screen').style.display = 'block';
-          window.scrollTo(0, 0);
+            // Load Pickup Settings
+            db.ref('settings/pickup').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    populatePickupDropdowns(data.locations || [], data.timeslots || []);
+                } else {
+                    populatePickupDropdowns(
+                        ["Central Flagship Store", "Kowloon TST Branch", "Shatin Hotel Lobby"],
+                        ["11:00 AM - 01:00 PM", "01:00 PM - 04:00 PM", "04:00 PM - 07:00 PM"]
+                    );
+                }
+            });
         }
-      });
-    }
 
-    function generatePdf(sub) {
-      let pdfContent = `
-        <div style="padding: 24px; font-family: sans-serif;">
-          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
-          <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Created: ${sub.dateSubmitted}</p>
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Ref No:</td><td>${sub.refNo || 'N/A'}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Guest Name:</td><td>${sub.guestName}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td style="white-space: pre-wrap;">${sub.wording}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td style="white-space: pre-wrap;">${sub.remarks}</td></tr>
-          </table>
-          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
-            <thead>
-              <tr style="background: #f4f8f5;"><th>Item</th><th>Option</th><th align="right">Price</th><th align="center">Qty</th><th align="right">Subtotal</th></tr>
-            </thead>
-            <tbody>
-      `;
-      sub.items.forEach(i => {
-        pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
-      });
-      pdfContent += `
-            <tr style="font-weight: bold;"><td colspan="4" align="right">Total:</td><td align="right" style="color: #1b4332;">$${sub.totalAmount}</td></tr>
-            </tbody>
-          </table>
-        </div>
-      `;
+        function populatePickupDropdowns(locations, timeslots) {
+            const locSelect = document.getElementById('pickupLocation');
+            const timeSelect = document.getElementById('pickupTime');
 
-      html2pdf().set({
-        margin: 0.5,
-        filename: `Cake_Order_${sub.id}_${sub.guestName.replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      }).from(pdfContent).save();
-    }
+            locSelect.innerHTML = '<option value="">Select pickup location...</option>' + 
+                locations.map(loc => `<option value="${loc}">${loc}</option>`).join('');
 
-    function resetFormView() {
-      document.getElementById('cake-order-form').reset();
-      cart = {};
-      updateCartUI();
-      document.getElementById('confirmation-screen').style.display = 'none';
-      document.getElementById('form-container').style.display = 'block';
-      document.getElementById('cart-float-bar').style.display = 'flex';
-      initPickupDateAndTime();
-    }
-  </script>
+            timeSelect.innerHTML = '<option value="">Select pickup time...</option>' + 
+                timeslots.map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+
+        function renderCustomerCatalog() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const container = document.getElementById('catalogList');
+
+            const filtered = currentCatalog.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(search) || item.code.toLowerCase().includes(search);
+                const matchesCat = category === 'ALL' || item.category === category;
+                return matchesSearch && matchesCat;
+            });
+
+            document.getElementById('catalogCountBadge').innerText = `${filtered.length} Items Displayed`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-400">No matching cake items found.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => {
+                const qty = selectedQuantities[item.id] || 0;
+                return `
+                    <div class="p-4 rounded-xl border border-slate-200 hover:border-forest-500 transition flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="bg-forest-100 text-forest-800 text-xs px-2 py-0.5 rounded font-mono font-bold">${item.code}</span>
+                                <h3 class="font-bold text-slate-800">${item.name}</h3>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-1">${item.description || 'Delicately crafted gourmet specialty.'}</p>
+                            <p class="text-forest-700 font-bold mt-2">$${item.price} HKD</p>
+                        </div>
+                        <div class="flex items-center space-x-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                            <button type="button" onclick="updateQty('${item.id}', -1)" class="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center font-bold text-slate-700 hover:bg-slate-200">-</button>
+                            <span class="w-8 text-center font-bold text-slate-800" id="qty-${item.id}">${qty}</span>
+                            <button type="button" onclick="updateQty('${item.id}', 1)" class="w-8 h-8 rounded-lg bg-forest-500 text-white shadow-sm flex items-center justify-center font-bold hover:bg-forest-700">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            calculateTotals();
+        }
+
+        function updateQty(itemId, delta) {
+            const current = selectedQuantities[itemId] || 0;
+            const updated = Math.max(0, current + delta);
+            if (updated === 0) {
+                delete selectedQuantities[itemId];
+            } else {
+                selectedQuantities[itemId] = updated;
+            }
+            const el = document.getElementById(`qty-${itemId}`);
+            if (el) el.innerText = updated;
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            let count = 0;
+            let total = 0;
+
+            Object.keys(selectedQuantities).forEach(id => {
+                const item = currentCatalog.find(c => c.id === id);
+                if (item) {
+                    const q = selectedQuantities[id];
+                    count += q;
+                    total += (item.price * q);
+                }
+            });
+
+            document.getElementById('orderSummaryText').innerText = `${count} Total Items Selected`;
+            document.getElementById('orderTotalPrice').innerText = `$${total.toLocaleString()} HKD`;
+        }
+
+        // Generate Order Ref ID: YYYYMMDD001...
+        async function generateRefNo() {
+            const now = new Date();
+            const datePrefix = now.getFullYear().toString() +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0');
+
+            const refCounterRef = db.ref(`order_counters/${datePrefix}`);
+            const result = await refCounterRef.transaction((currentValue) => {
+                return (currentValue || 0) + 1;
+            });
+
+            const count = result.snapshot.val();
+            const sequenceStr = String(count).padStart(3, '0');
+            return `${datePrefix}${sequenceStr}`;
+        }
+
+        // Form Submission Handler
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const selectedItemsArray = [];
+            Object.keys(selectedQuantities).forEach(id => {
+                const item = currentCatalog.find(c => c.id === id);
+                if (item && selectedQuantities[id] > 0) {
+                    selectedItemsArray.push({
+                        id: item.id,
+                        code: item.code,
+                        name: item.name,
+                        price: item.price,
+                        quantity: selectedQuantities[id],
+                        subtotal: item.price * selectedQuantities[id]
+                    });
+                }
+            });
+
+            if (selectedItemsArray.length === 0) {
+                alert("Please select at least one cake item to place an order.");
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting Order...`;
+
+            try {
+                const refNo = await generateRefNo();
+                const now = new Date();
+                const formattedTimestamp = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                let grandTotal = 0;
+                selectedItemsArray.forEach(i => grandTotal += i.subtotal);
+
+                const newOrder = {
+                    refNo: refNo,
+                    guestName: document.getElementById('guestName').value.trim(),
+                    contactPhone: document.getElementById('contactPhone').value.trim(),
+                    contactEmail: document.getElementById('contactEmail').value.trim(),
+                    pickupLocation: document.getElementById('pickupLocation').value,
+                    pickupDate: document.getElementById('pickupDate').value,
+                    pickupTime: document.getElementById('pickupTime').value,
+                    cakeWording: document.getElementById('cakeWording').value.trim(),
+                    remarks: document.getElementById('remarks').value.trim(),
+                    items: selectedItemsArray,
+                    totalAmount: grandTotal,
+                    status: "Pending",
+                    handlingStaff: "Self-Service",
+                    createdAt: formattedTimestamp,
+                    updatedAt: formattedTimestamp
+                };
+
+                await db.ref('orders/' + refNo).set(newOrder);
+
+                alert(`Order Submitted Successfully!\nYour Reference No is: ${refNo}`);
+                document.getElementById('orderForm').reset();
+                selectedQuantities = {};
+                renderCustomerCatalog();
+            } catch (err) {
+                console.error("Order submission error:", err);
+                alert("An error occurred while submitting your order. Please try again.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Submit Cake Order</span>`;
+            }
+        }
+
+        window.onload = function() {
+            initializeCatalog();
+        };
+    </script>
 </body>
 </html>
