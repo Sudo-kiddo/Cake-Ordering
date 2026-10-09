@@ -221,7 +221,7 @@
       </div>
 
       <div style="text-align: center; margin-top: 30px;">
-        <button type="submit" class="btn-checkout" style="max-width: 360px; margin: 0 auto;">
+        <button type="button" class="btn-checkout" onclick="handleCustomerSubmit(event)" style="max-width: 360px; margin: 0 auto;">
           <i class="fa-solid fa-paper-plane"></i> Submit Order
         </button>
       </div>
@@ -447,7 +447,7 @@
       const priceText = prices.map(p => `$${p.price}`).join(' / ');
       let optionsHtml = prices.length > 1 
         ? `<select class="size-select-box" id="select_size_${item.id}">
-             ${prices.map((p, idx) => `<option value="${idx}">${p.label} -$${p.price}</option>`).join('')}
+             ${prices.map((p, idx) => `<option value="${idx}">${p.label} - $${p.price}</option>`).join('')}
            </select>`
         : `<span style="font-size:0.8rem; color:#666;">${prices[0].label}</span>`;
 
@@ -612,20 +612,28 @@
     }
 
     function handleCustomerSubmit(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
+      
+      const guestName = document.getElementById('guestName').value.trim();
+      const tel = document.getElementById('tel').value.trim();
+      const pickupDateVal = document.getElementById('pickupDate').value;
+      const pickupTime = document.getElementById('pickupTime').value;
+
+      if (!guestName || !tel || !pickupDateVal || !pickupTime) {
+        alert("Please complete all required customer & order details (Guest Name, Tel, Pickup Date, and Pickup Time).");
+        return;
+      }
+
       const items = Object.values(cart);
       if (items.length === 0) {
-        alert("Your cart is empty! Please add at least one item.");
+        alert("Your cart is empty! Please add at least one item from the selection below.");
         openCartDrawer();
         return;
       }
 
-      const guestName = document.getElementById('guestName').value;
-      const tel = document.getElementById('tel').value;
-      const pickupDate = formatDateDisplay(document.getElementById('pickupDate').value);
-      const pickupTime = document.getElementById('pickupTime').value;
       const wording = document.getElementById('wording').value || 'None';
       const remarks = document.getElementById('remarks').value || 'None';
+      const pickupDate = formatDateDisplay(pickupDateVal);
 
       const orderId = generateNextOrderId();
       const totalAmount = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
@@ -644,27 +652,36 @@
 
       db.ref('cake_submissions/' + orderId).set(submission, (error) => {
         if (error) {
-          alert("Submission failed. Please try again.");
+          alert("Submission failed. Please check your connection and try again.");
         } else {
-          if (emailSettings.serviceId && emailSettings.templateId && typeof emailjs !== 'undefined') {
-            const templateParams = {
-              to_email: emailSettings.primary,
-              cc_email: emailSettings.cc || '',
-              order_id: submission.id,
-              guest_name: submission.guestName,
-              tel: submission.tel,
-              pickup_date: submission.pickupDate,
-              pickup_time: submission.pickupTime,
-              wording: submission.wording,
-              remarks: submission.remarks,
-              total_amount: submission.totalAmount
-            };
-            emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
-              .then(() => console.log('Instant email sent successfully'))
-              .catch(err => console.error('Email dispatch failed:', err));
+          try {
+            if (emailSettings.serviceId && emailSettings.templateId && typeof emailjs !== 'undefined') {
+              const templateParams = {
+                to_email: emailSettings.primary,
+                cc_email: emailSettings.cc || '',
+                order_id: submission.id,
+                guest_name: submission.guestName,
+                tel: submission.tel,
+                pickup_date: submission.pickupDate,
+                pickup_time: submission.pickupTime,
+                wording: submission.wording,
+                remarks: submission.remarks,
+                total_amount: submission.totalAmount
+              };
+              emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
+                .then(() => console.log('Instant email sent successfully'))
+                .catch(err => console.error('Email dispatch failed:', err));
+            }
+          } catch (e) {
+            console.warn("Email dispatch skipped due to missing config.", e);
           }
 
-          generatePdf(submission);
+          try {
+            generatePdf(submission);
+          } catch (pdfErr) {
+            console.warn("PDF generation error:", pdfErr);
+          }
+
           document.getElementById('form-container').style.display = 'none';
           document.getElementById('cart-float-bar').style.display = 'none';
           document.getElementById('confirmation-screen').style.display = 'block';
@@ -674,6 +691,8 @@
     }
 
     function generatePdf(sub) {
+      if (typeof html2pdf === 'undefined') return;
+
       let pdfContent = `
         <div style="padding: 24px; font-family: sans-serif;">
           <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
@@ -722,7 +741,6 @@
       initPickupDateAndTime();
     }
 
-    // Direct initialization on document load
     document.addEventListener('DOMContentLoaded', () => {
       renderFormCatalog();
       initPickupDateAndTime();
