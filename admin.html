@@ -127,7 +127,6 @@
     <div class="nav-tabs">
       <button type="button" class="tab-btn active" id="tab-btn-submissions" onclick="switchTab('submissions')"><i class="fa-solid fa-list-check"></i> Submissions</button>
       <button type="button" class="tab-btn" id="tab-btn-items" onclick="switchTab('items')"><i class="fa-solid fa-utensils"></i> Menu Items</button>
-      <button type="button" class="tab-btn" id="tab-btn-email" onclick="switchTab('email')"><i class="fa-solid fa-envelope"></i> Email Settings</button>
       <button type="button" class="tab-btn" id="tab-btn-pickup" onclick="switchTab('pickup')"><i class="fa-solid fa-clock"></i> Pickup Settings</button>
       <button type="button" class="tab-btn" id="tab-btn-preview" onclick="switchTab('preview')"><i class="fa-solid fa-eye"></i> Form Preview</button>
       <button type="button" class="tab-btn" id="tab-btn-share" onclick="switchTab('share')"><i class="fa-solid fa-qrcode"></i> Share / QR Code</button>
@@ -211,26 +210,7 @@
         </div>
       </div>
     </div>
-
-    <!-- EMAIL DISPATCH TAB -->
-    <div id="tab-email" class="tab-content">
-      <div class="card">
-        <div class="card-title">Email Notification Settings</div>
-        <form id="email-form" onsubmit="event.preventDefault(); handleSaveEmail();">
-          <div class="form-grid">
-            <div class="form-group"><label for="email-primary">Primary Recipient Email *</label><input type="email" id="email-primary" required placeholder="pastry.kitchen@restaurant.com"></div>
-            <div class="form-group"><label for="email-cc">CC Email Addresses (Comma separated)</label><input type="text" id="email-cc" placeholder="manager@restaurant.com"></div>
-            <div class="form-group"><label for="email-publickey">EmailJS Public Key</label><input type="text" id="email-publickey" placeholder="e.g. user_123abc"></div>
-            <div class="form-group"><label for="email-serviceid">EmailJS Service ID</label><input type="text" id="email-serviceid" placeholder="e.g. service_gmail"></div>
-            <div class="form-group full-width"><label for="email-templateid">EmailJS Template ID</label><input type="text" id="email-templateid" placeholder="e.g. template_cake_order"></div>
-            <div class="form-group full-width" style="margin-top: 10px;">
-              <button type="button" class="btn btn-primary" onclick="handleSaveEmail()"><i class="fa-solid fa-floppy-disk"></i> Save Email Settings</button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-
+    
     <!-- PICKUP TIME SLOTS TAB -->
     <div id="tab-pickup" class="tab-content">
       <div class="card">
