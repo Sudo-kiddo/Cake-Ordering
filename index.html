@@ -155,15 +155,11 @@
         <div class="form-grid">
           <div class="form-group">
             <label for="guestName">Guest Name *</label>
-            <input type="text" id="guestName" required placeholder="Guest Name">
+            <input type="text" id="guestName" required placeholder="e.g. Edward">
           </div>
           <div class="form-group">
             <label for="tel">Contact Tel *</label>
-            <input type="tel" id="tel" required placeholder="e.g. 34001334">
-          </div>
-          <div class="form-group">
-            <label for="handlingStaff">Handling Staff *</label>
-            <input type="text" id="handlingStaff" required placeholder="Staff Name">
+            <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
           </div>
           <div class="form-group">
             <label for="pickupDate">Pickup Date *</label>
@@ -175,7 +171,7 @@
           </div>
           <div class="form-group full-width">
             <label for="wording">Wording on Cake</label>
-            <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday!&#10;Shift + Enter for Next Row"></textarea>
+            <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday John!&#10;Wish you happiness and healthy always!"></textarea>
           </div>
           <div class="form-group full-width">
             <label for="remarks">Remarks</label>
@@ -264,7 +260,7 @@
     </div>
   </div>
 
-  <!-- Confirmation Screen (kept as you requested) -->
+  <!-- Confirmation Screen -->
   <div class="container" id="confirmation-screen">
     <i class="fa-solid fa-circle-check"></i>
     <h2>Order Submitted Successfully!</h2>
@@ -276,17 +272,15 @@
 
   <script>
     // --- FIREBASE CONFIGURATION ---
-    // ★★★ IMPORTANT: Replace ALL values below with your real Firebase project credentials ★★★
-    // Without real credentials, orders will NOT appear in the admin portal and catalog will NOT sync.
+    // ★★★ Replace with your real Firebase project values ★★★
     const firebaseConfig = {
-      apiKey: "AIzaSyBNMvnpxdm0ckOvqjKdYg_Ui5I0yo9Og7k",
-      authDomain: "cake-ordering-52b19.firebaseapp.com",
-      databaseURL: "https://cake-ordering-52b19-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "cake-ordering-52b19",
-      storageBucket: "cake-ordering-52b19.firebasestorage.app",
-      messagingSenderId: "884843232096",
-      appId: "1:884843232096:web:c28d51e676d4370f113c05",
-      measurementId: "G-4566QCCPNR"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
     if (!firebase.apps.length) {
@@ -358,7 +352,6 @@
 
     let catalog = DEFAULT_CATALOG;
     let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
-    let emailSettings = {};
     let submissionsList = [];
     let cart = {};
 
@@ -387,16 +380,6 @@
         const val = snapshot.val();
         if (val) pickupSettings = val;
         initPickupDateAndTime();
-      });
-
-      db.ref('cake_email').on('value', (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          emailSettings = val;
-          if (emailSettings.publicKey && typeof emailjs !== 'undefined') {
-            emailjs.init(emailSettings.publicKey);
-          }
-        }
       });
 
       db.ref('cake_submissions').on('value', (snapshot) => {
@@ -621,19 +604,13 @@
     function handleCustomerSubmit() {
       const guestName = document.getElementById('guestName').value.trim();
       const tel = document.getElementById('tel').value.trim();
-      const handlingStaff = document.getElementById('handlingStaff').value.trim();
       const pickupDateVal = document.getElementById('pickupDate').value;
       const pickupTime = document.getElementById('pickupTime').value;
 
-      if (!guestName || !tel || !handlingStaff || !pickupDateVal || !pickupTime) {
-        alert(
-          "Please complete all required fields:\n" +
-          "• Guest Name\n" +
-          "• Contact Tel\n" +
-          "• Handling Staff\n" +
-          "• Pickup Date\n" +
-          "• Pickup Time"
-        );
+      if (!guestName || !tel || !pickupDateVal || !pickupTime) {
+        alert("Please complete all required fields:\n• Guest Name\n• Contact Tel\n• Pickup Date\n• Pickup Time");
+        return;
+      }
 
       const items = Object.values(cart);
       if (items.length === 0) {
@@ -642,7 +619,7 @@
         return;
       }
 
-      // ===== IMPROVED CONFIRMATION DIALOG =====
+      // Confirmation dialog with item list
       const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
       let itemList = items.map(i => 
         `• ${i.name} (${i.option}) × ${i.qty} = $${i.price * i.qty}`
@@ -652,7 +629,6 @@
 `Confirm your order?
 
 Guest: ${guestName}
-Handling Staff: ${handlingStaff}
 Pickup: ${formatDateDisplay(pickupDateVal)} at ${pickupTime}
 
 Items:
@@ -673,55 +649,30 @@ Total: $${total}`;
       const submission = {
         id: orderId,
         refNo: "N/A",
-        guestName, tel, handlingStaff, pickupDate, pickupTime, wording, remarks,
+        guestName, tel, pickupDate, pickupTime, wording, remarks,
         items: items.map(i => ({ name: i.name, option: i.option, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
         totalAmount,
         dateSubmitted: formattedTimestamp,
+        handlingStaff: "Unassigned",
         lastUpdated: formattedTimestamp
       };
 
-      // Write to Firebase
+      // Save to Firebase
       db.ref('cake_submissions/' + orderId).set(submission, (error) => {
         if (error) {
-          alert(
-            "❌ Submission failed!\n\n" +
-            "Most common reason: Firebase is still using placeholder credentials (YOUR_API_KEY).\n\n" +
-            "Please open the code and replace the firebaseConfig with your real project values, then try again."
-          );
+          alert("❌ Submission failed!\n\nPlease check your Firebase configuration and internet connection.");
           console.error(error);
           return;
         }
 
-        // Success path
-        // 1. Try to send email (optional)
-        try {
-          if (emailSettings.serviceId && emailSettings.templateId && typeof emailjs !== 'undefined') {
-            const templateParams = {
-              to_email: emailSettings.primary,
-              cc_email: emailSettings.cc || '',
-              order_id: submission.id,
-              guest_name: submission.guestName,
-              tel: submission.tel,
-              pickup_date: submission.pickupDate,
-              pickup_time: submission.pickupTime,
-              wording: submission.wording,
-              remarks: submission.remarks,
-              total_amount: submission.totalAmount
-            };
-            emailjs.send(emailSettings.serviceId, emailSettings.templateId, templateParams)
-              .then(() => console.log('Email sent'))
-              .catch(err => console.error('Email failed:', err));
-          }
-        } catch (e) { console.warn("Email skipped", e); }
-
-        // 2. Generate & download PDF immediately
+        // Generate & download PDF
         try {
           generatePdf(submission);
         } catch (pdfErr) {
           console.warn("PDF error:", pdfErr);
         }
 
-        // 3. Show success confirmation page
+        // Show success page
         document.getElementById('form-container').style.display = 'none';
         document.getElementById('cart-float-bar').style.display = 'none';
         document.getElementById('confirmation-screen').style.display = 'block';
