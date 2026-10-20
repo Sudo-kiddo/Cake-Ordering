@@ -155,11 +155,15 @@
         <div class="form-grid">
           <div class="form-group">
             <label for="guestName">Guest Name *</label>
-            <input type="text" id="guestName" required placeholder="e.g. Edward">
+            <input type="text" id="guestName" required placeholder="Guest Name">
           </div>
           <div class="form-group">
             <label for="tel">Contact Tel *</label>
-            <input type="tel" id="tel" required placeholder="e.g. 2300 1234">
+            <input type="tel" id="tel" required placeholder="e.g. 34001334">
+          </div>
+          <div class="form-group">
+            <label for="handlingStaff">Handling Staff *</label>
+            <input type="text" id="handlingStaff" required placeholder="Staff Name">
           </div>
           <div class="form-group">
             <label for="pickupDate">Pickup Date *</label>
@@ -171,7 +175,7 @@
           </div>
           <div class="form-group full-width">
             <label for="wording">Wording on Cake</label>
-            <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday John!&#10;Wish you happiness and healthy always!"></textarea>
+            <textarea id="wording" rows="3" placeholder="e.g. Happy Birthday!&#10;Shift + Enter for Next Row"></textarea>
           </div>
           <div class="form-group full-width">
             <label for="remarks">Remarks</label>
@@ -617,13 +621,19 @@
     function handleCustomerSubmit() {
       const guestName = document.getElementById('guestName').value.trim();
       const tel = document.getElementById('tel').value.trim();
+      const handlingStaff = document.getElementById('handlingStaff').value.trim();
       const pickupDateVal = document.getElementById('pickupDate').value;
       const pickupTime = document.getElementById('pickupTime').value;
 
-      if (!guestName || !tel || !pickupDateVal || !pickupTime) {
-        alert("Please complete all required fields:\n• Guest Name\n• Contact Tel\n• Pickup Date\n• Pickup Time");
-        return;
-      }
+      if (!guestName || !tel || !handlingStaff || !pickupDateVal || !pickupTime) {
+        alert(
+          "Please complete all required fields:\n" +
+          "• Guest Name\n" +
+          "• Contact Tel\n" +
+          "• Handling Staff\n" +
+          "• Pickup Date\n" +
+          "• Pickup Time"
+        );
 
       const items = Object.values(cart);
       if (items.length === 0) {
@@ -642,6 +652,7 @@
 `Confirm your order?
 
 Guest: ${guestName}
+Handling Staff: ${handlingStaff}
 Pickup: ${formatDateDisplay(pickupDateVal)} at ${pickupTime}
 
 Items:
@@ -662,11 +673,10 @@ Total: $${total}`;
       const submission = {
         id: orderId,
         refNo: "N/A",
-        guestName, tel, pickupDate, pickupTime, wording, remarks,
+        guestName, tel, handlingStaff, pickupDate, pickupTime, wording, remarks,
         items: items.map(i => ({ name: i.name, option: i.option, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
         totalAmount,
         dateSubmitted: formattedTimestamp,
-        handlingStaff: "Unassigned",
         lastUpdated: formattedTimestamp
       };
 
