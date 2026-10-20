@@ -347,534 +347,509 @@
   </div>
 
   <script>
-    // --- FIREBASE CONFIGURATION ---
-    // ★★★ Replace with your real Firebase project values ★★★
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
+  // --- FIREBASE CONFIGURATION ---
+  // ★★★ Replace with your real Firebase project values ★★★
+  const firebaseConfig = {
+    apiKey: "AIzaSyBNMvnpxdm0ckOvqjKdYg_Ui5I0yo9Og7k",
+    authDomain: "cake-ordering-52b19.firebaseapp.com",
+    databaseURL: "https://cake-ordering-52b19-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "cake-ordering-52b19",
+    storageBucket: "cake-ordering-52b19.firebasestorage.app",
+    messagingSenderId: "884843232096",
+    appId: "1:884843232096:web:c28d51e676d4370f113c05",
+    measurementId: "G-4566QCCPNR"
+  };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.database();
 
-    const DEFAULT_CATALOG = [
-      { id: "item_1", name: "Green Tea Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_2", name: "Jasmine Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_3", name: "Blueberry Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_4", name: "Mango Dome", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_5", name: "Strawberry Olive Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
-      { id: "item_6", name: "Durian Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 88 }, { label: "Whole Cake", price: 380 }] },
-      { id: "item_7", name: "Seasonal Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 68 }, { label: "Whole Cake", price: 360 }] },
-      { id: "item_8", name: "Berry Pandan", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_9", name: "Earl Grey Tea Chiffon Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_10", name: "Berrylicious Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_11", name: "Peacheous Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_12", name: "Mango Snow", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_13", name: "Forêt Noire (Contains alcohol)", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
-      { id: "item_14", name: "Durian Pandan Opera Cake", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
-      { id: "item_15", name: "D197 Durian Mille Feuille", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
-      { id: "item_16", name: "Durian Cream Cake Box", cat: "whole", prices: [{ label: "1 Box", price: 180 }] },
-      { id: "item_17", name: "Durian Pandan 3D Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
-      { id: "item_18", name: "Durian Burnt Basque Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 88 }, { label: "Whole Cake", price: 420 }] },
-      { id: "item_19", name: "Lotus Biscoff Durian Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 198 }, { label: "Whole Cake", price: 380 }] },
-      { id: "item_20", name: "Durian Snowy Cheddar Cheese Pandan Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 210 }] },
-      { id: "item_21", name: "Durian Serradura", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
-      { id: "item_22", name: "Melon Mousse Cake", cat: "whole", prices: [{ label: "Slice", price: 98 }, { label: "Whole Cake", price: 520 }] },
-      { id: "item_23", name: "Taro Cream Cake", cat: "whole", prices: [{ label: "Slice", price: 68 }, { label: "Whole Cake", price: 360 }] },
-      { id: "item_24", name: "Pandan Durian Roulade (1pc)", cat: "pastries", prices: [{ label: "1 pc", price: 100 }] },
-      { id: "item_25", name: "D197 Durian Cheese Puff (8pcs)", cat: "pastries", prices: [{ label: "8 pcs", price: 228 }] },
-      { id: "item_26", name: "Mini D24 Durian Cheese Tart (12pcs)", cat: "pastries", prices: [{ label: "12 pcs", price: 168 }] },
-      { id: "item_27", name: "Pandan Mango Cream Roll", cat: "pastries", prices: [{ label: "1 pc", price: 60 }] },
-      { id: "item_28", name: "Pandan Chiffon Cake", cat: "pastries", prices: [{ label: "1 pc", price: 138 }] },
-      { id: "item_29", name: "Scone (4pcs)", cat: "pastries", prices: [{ label: "4 pcs", price: 72 }] },
-      { id: "item_30", name: "Blueberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_31", name: "Chocolate Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_32", name: "Mango Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_33", name: "Melon Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_34", name: "Strawberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
-      { id: "item_35", name: "Earl Grey Roulade with Mochi", cat: "pastries", prices: [{ label: "1 pc", price: 68 }] },
-      { id: "item_36", name: "Durian Serradura Cup", cat: "pastries", prices: [{ label: "1 Cup", price: 88 }] },
-      { id: "item_37", name: "Tiramisu", cat: "pastries", prices: [{ label: "1 Cup", price: 60 }] },
-      { id: "item_38", name: "Coffee Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
-      { id: "item_39", name: "XO Sauce (238g)", cat: "sweets", prices: [{ label: "1 Jar", price: 238 }] },
-      { id: "item_40", name: "A&B Crystal Walnut (0.5lb)", cat: "sweets", prices: [{ label: "0.5 lb", price: 198 }] },
-      { id: "item_41", name: "Salted Egg & Sakura Shrimp Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
-      { id: "item_42", name: "Butterfly Cookies", cat: "sweets", prices: [{ label: "1 Box", price: 98 }] },
-      { id: "item_43", name: "Assorted Chocolate (9pcs)", cat: "sweets", prices: [{ label: "9 pcs", price: 288 }] },
-      { id: "item_44", name: "ICONIC Eats Birthday Cake", cat: "addons", prices: [{ label: "Standard", price: 0 }] },
-      { id: "item_45", name: "Thermal Bag & Ice Gel", cat: "addons", prices: [{ label: "1 Set", price: 50 }] }
-    ];
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const db = firebase.database();
 
-    function generate15MinTimeSlots() {
-      const slots = [];
-      for (let hour = 10; hour <= 24; hour++) {
-        const hStr = String(hour).padStart(2, '0');
-        slots.push(`${hStr}:00`);
-        if (hour < 24) {
-          slots.push(`${hStr}:15`); slots.push(`${hStr}:30`); slots.push(`${hStr}:45`);
-        }
+  const DEFAULT_CATALOG = [
+    { id: "item_1", name: "Green Tea Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+    { id: "item_2", name: "Jasmine Chocolate Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+    { id: "item_3", name: "Blueberry Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+    { id: "item_4", name: "Mango Dome", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+    { id: "item_5", name: "Strawberry Olive Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 60 }, { label: "Whole Cake", price: 340 }] },
+    { id: "item_6", name: "Durian Cheese Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 88 }, { label: "Whole Cake", price: 380 }] },
+    { id: "item_7", name: "Seasonal Cake", cat: "whole", prices: [{ label: "Slice / Standard", price: 68 }, { label: "Whole Cake", price: 360 }] },
+    { id: "item_8", name: "Berry Pandan", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+    { id: "item_9", name: "Earl Grey Tea Chiffon Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+    { id: "item_10", name: "Berrylicious Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+    { id: "item_11", name: "Peacheous Delight", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+    { id: "item_12", name: "Mango Snow", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+    { id: "item_13", name: "Forêt Noire (Contains alcohol)", cat: "whole", prices: [{ label: "Whole Cake", price: 340 }] },
+    { id: "item_14", name: "Durian Pandan Opera Cake", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+    { id: "item_15", name: "D197 Durian Mille Feuille", cat: "whole", prices: [{ label: "Slice", price: 100 }, { label: "Whole Cake", price: 520 }] },
+    { id: "item_16", name: "Durian Cream Cake Box", cat: "whole", prices: [{ label: "1 Box", price: 180 }] },
+    { id: "item_17", name: "Durian Pandan 3D Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+    { id: "item_18", name: "Durian Burnt Basque Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 88 }, { label: "Whole Cake", price: 420 }] },
+    { id: "item_19", name: "Lotus Biscoff Durian Cheesecake", cat: "whole", prices: [{ label: "Slice", price: 198 }, { label: "Whole Cake", price: 380 }] },
+    { id: "item_20", name: "Durian Snowy Cheddar Cheese Pandan Cake", cat: "whole", prices: [{ label: "Whole Cake", price: 210 }] },
+    { id: "item_21", name: "Durian Serradura", cat: "whole", prices: [{ label: "Whole Cake", price: 380 }] },
+    { id: "item_22", name: "Melon Mousse Cake", cat: "whole", prices: [{ label: "Slice", price: 98 }, { label: "Whole Cake", price: 520 }] },
+    { id: "item_23", name: "Taro Cream Cake", cat: "whole", prices: [{ label: "Slice", price: 68 }, { label: "Whole Cake", price: 360 }] },
+    { id: "item_24", name: "Pandan Durian Roulade (1pc)", cat: "pastries", prices: [{ label: "1 pc", price: 100 }] },
+    { id: "item_25", name: "D197 Durian Cheese Puff (8pcs)", cat: "pastries", prices: [{ label: "8 pcs", price: 228 }] },
+    { id: "item_26", name: "Mini D24 Durian Cheese Tart (12pcs)", cat: "pastries", prices: [{ label: "12 pcs", price: 168 }] },
+    { id: "item_27", name: "Pandan Mango Cream Roll", cat: "pastries", prices: [{ label: "1 pc", price: 60 }] },
+    { id: "item_28", name: "Pandan Chiffon Cake", cat: "pastries", prices: [{ label: "1 pc", price: 138 }] },
+    { id: "item_29", name: "Scone (4pcs)", cat: "pastries", prices: [{ label: "4 pcs", price: 72 }] },
+    { id: "item_30", name: "Blueberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+    { id: "item_31", name: "Chocolate Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+    { id: "item_32", name: "Mango Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+    { id: "item_33", name: "Melon Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+    { id: "item_34", name: "Strawberry Mini Cream Cake", cat: "pastries", prices: [{ label: "1 pc", price: 35 }] },
+    { id: "item_35", name: "Earl Grey Roulade with Mochi", cat: "pastries", prices: [{ label: "1 pc", price: 68 }] },
+    { id: "item_36", name: "Durian Serradura Cup", cat: "pastries", prices: [{ label: "1 Cup", price: 88 }] },
+    { id: "item_37", name: "Tiramisu", cat: "pastries", prices: [{ label: "1 Cup", price: 60 }] },
+    { id: "item_38", name: "Coffee Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+    { id: "item_39", name: "XO Sauce (238g)", cat: "sweets", prices: [{ label: "1 Jar", price: 238 }] },
+    { id: "item_40", name: "A&B Crystal Walnut (0.5lb)", cat: "sweets", prices: [{ label: "0.5 lb", price: 198 }] },
+    { id: "item_41", name: "Salted Egg & Sakura Shrimp Cookies (8pcs)", cat: "sweets", prices: [{ label: "8 pcs", price: 158 }] },
+    { id: "item_42", name: "Butterfly Cookies", cat: "sweets", prices: [{ label: "1 Box", price: 98 }] },
+    { id: "item_43", name: "Assorted Chocolate (9pcs)", cat: "sweets", prices: [{ label: "9 pcs", price: 288 }] },
+    { id: "item_44", name: "ICONIC Eats Birthday Cake", cat: "addons", prices: [{ label: "Standard", price: 0 }] },
+    { id: "item_45", name: "Thermal Bag & Ice Gel", cat: "addons", prices: [{ label: "1 Set", price: 50 }] }
+  ];
+
+  function generate15MinTimeSlots() {
+    const slots = [];
+    for (let hour = 10; hour <= 24; hour++) {
+      const hStr = String(hour).padStart(2, '0');
+      slots.push(`${hStr}:00`);
+      if (hour < 24) {
+        slots.push(`${hStr}:15`); slots.push(`${hStr}:30`); slots.push(`${hStr}:45`);
       }
-      return slots;
     }
+    return slots;
+  }
 
-    const ALL_15MIN_SLOTS = generate15MinTimeSlots();
+  const ALL_15MIN_SLOTS = generate15MinTimeSlots();
 
-    let submissions = [];
-    let catalog = DEFAULT_CATALOG;
-    let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
+  let catalog = DEFAULT_CATALOG;
+  let pickupSettings = { leadDays: 1, enabledSlots: ALL_15MIN_SLOTS };
+  let submissionsList = [];
+  let cart = {};
 
-    function formatDateTime24(dateObj) {
-      const dd = String(dateObj.getDate()).padStart(2, '0');
-      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const yyyy = dateObj.getFullYear();
-      const hh = String(dateObj.getHours()).padStart(2, '0');
-      const min = String(dateObj.getMinutes()).padStart(2, '0');
-      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
-    }
+  function formatDateTime24(dateObj) {
+    const dd = String(dateObj.getDate()).padStart(2, '0');
+    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const yyyy = dateObj.getFullYear();
+    const hh = String(dateObj.getHours()).padStart(2, '0');
+    const min = String(dateObj.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+  }
 
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
-      const targetBtn = document.getElementById(`tab-btn-${tabId}`);
-      if (targetBtn) targetBtn.classList.add('active');
-      document.getElementById(`tab-${tabId}`).classList.add('active');
-
-      if (tabId === 'submissions') renderSubmissions();
-      if (tabId === 'items') renderItems();
-      if (tabId === 'pickup') renderPickupSettings();
-      if (tabId === 'share') renderQr();
-    }
-
-    // Firebase listeners
-    try {
-      db.ref('cake_submissions').on('value', (snapshot) => {
-        const val = snapshot.val();
-        submissions = val ? Object.values(val).reverse() : [];
-        renderSubmissions();
-      });
-
-      db.ref('cake_catalog').on('value', (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          catalog = Array.isArray(val) ? val : Object.values(val);
-        } else {
-          db.ref('cake_catalog').set(DEFAULT_CATALOG);
-        }
-        renderItems();
-      });
-
-      db.ref('cake_pickup').on('value', (snapshot) => {
-        const val = snapshot.val();
-        if (val) {
-          pickupSettings = val;
-          renderPickupSettings();
-        }
-      });
-    } catch (e) {
-      console.warn("Firebase listener error (using defaults):", e);
-      renderItems();
-      renderPickupSettings();
-    }
-
-    function renderSubmissions() {
-      const tbody = document.getElementById('submissions-tbody');
-      const emptyMsg = document.getElementById('no-submissions-msg');
-      tbody.innerHTML = '';
-
-      if (submissions.length === 0) {
-        emptyMsg.style.display = 'block';
-        return;
+  // Firebase listeners
+  try {
+    db.ref('cake_catalog').on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (val) {
+        catalog = Array.isArray(val) ? val : Object.values(val);
+      } else {
+        catalog = DEFAULT_CATALOG;
       }
-      emptyMsg.style.display = 'none';
+      renderFormCatalog();
+    });
 
-      submissions.forEach((sub) => {
-        const totalQty = sub.items ? sub.items.reduce((s, i) => s + i.qty, 0) : 0;
-        const staffName = sub.handlingStaff || 'Unassigned';
-        const settlementNo = sub.settlementNo || sub.refNo || 'N/A';
-        const restaurant = sub.restaurant || 'N/A';
-        const lastUpdated = sub.lastUpdated || sub.dateSubmitted;
+    db.ref('cake_pickup').on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (val) pickupSettings = val;
+      initPickupDateAndTime();
+    });
 
-        tbody.innerHTML += `
-          <tr>
-            <td style="font-weight: 600; font-size: 0.8rem;">#${sub.id}</td>
-            <td><span class="settlement-badge">${settlementNo}</span></td>
-            <td><span class="restaurant-badge">${restaurant}</span></td>
-            <td style="font-size:0.8rem; color:#666;">${sub.dateSubmitted}</td>
-            <td>${sub.guestName}</td>
-            <td>${sub.tel}</td>
-            <td>${sub.pickupDate} ${sub.pickupTime}</td>
-            <td>${totalQty}</td>
-            <td style="font-weight: 600; color: var(--primary);">$${sub.totalAmount}</td>
-            <td><span class="staff-badge"><i class="fa-solid fa-user"></i> ${staffName}</span></td>
-            <td style="font-size:0.8rem; color:#666;">${lastUpdated}</td>
-            <td>
-              <button type="button" class="btn btn-secondary" onclick="openEditOrderModal('${sub.id}')" style="padding: 4px 8px; font-size: 0.8rem;">
-                <i class="fa-solid fa-pen"></i> Edit / Process
-              </button>
-            </td>
-          </tr>
-        `;
+    db.ref('cake_submissions').on('value', (snapshot) => {
+      const val = snapshot.val();
+      submissionsList = val ? Object.values(val) : [];
+    });
+  } catch (e) {
+    console.warn("Firebase listener error (using defaults):", e);
+    renderFormCatalog();
+    initPickupDateAndTime();
+  }
+
+  function initPickupDateAndTime() {
+    const dateInput = document.getElementById('pickupDate');
+    if (!dateInput) return;
+
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() + (pickupSettings.leadDays || 1));
+    
+    const yyyy = minDate.getFullYear();
+    const mm = String(minDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(minDate.getDate()).padStart(2, '0');
+    
+    const minDateStr = `${yyyy}-${mm}-${dd}`;
+    dateInput.min = minDateStr;
+    if (!dateInput.value) dateInput.value = minDateStr;
+
+    const timeSelect = document.getElementById('pickupTime');
+    if (!timeSelect) return;
+    timeSelect.innerHTML = '';
+    const slots = (pickupSettings.enabledSlots && pickupSettings.enabledSlots.length > 0) ? pickupSettings.enabledSlots : ALL_15MIN_SLOTS;
+    slots.forEach(slot => {
+      const opt = document.createElement('option');
+      opt.value = slot; opt.innerText = slot;
+      timeSelect.appendChild(opt);
+    });
+  }
+
+  function renderFormCatalog() {
+    ['whole', 'pastries', 'sweets', 'addons'].forEach(cat => {
+      const catContainer = document.getElementById(`cat-${cat}`);
+      if (!catContainer) return;
+      catContainer.innerHTML = '';
+      const catItems = catalog.filter(i => i.cat === cat);
+      catItems.forEach(item => {
+        catContainer.insertAdjacentHTML('beforeend', createItemCardHtml(item));
       });
-    }
+    });
+    updateCartUI();
+  }
 
-    function openEditOrderModal(orderId) {
-      const sub = submissions.find(s => String(s.id) === String(orderId));
-      if (!sub) return;
+  function createItemCardHtml(item) {
+    const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
+    if (prices.length === 0) prices.push({ label: "Standard", price: 0 });
 
-      document.getElementById('edit-modal-order-id').value = sub.id;
-      document.getElementById('modal-order-id-label').innerText = sub.id;
-      document.getElementById('edit-settlement-no').value = sub.settlementNo || sub.refNo || '';
-      document.getElementById('edit-restaurant').value = sub.restaurant || 'GREEN';
-      document.getElementById('edit-handling-staff').value = sub.handlingStaff || '';
-      document.getElementById('edit-guest-name').value = sub.guestName || '';
-      document.getElementById('edit-tel').value = sub.tel || '';
-      document.getElementById('edit-pickup-date').value = sub.pickupDate || '';
-      document.getElementById('edit-pickup-time').value = sub.pickupTime || '';
-      document.getElementById('edit-wording').value = sub.wording || '';
-      document.getElementById('edit-remarks').value = sub.remarks || '';
+    const priceText = prices.map(p => `$${p.price}`).join(' / ');
+    let optionsHtml = prices.length > 1 
+      ? `<select class="size-select-box" id="select_size_${item.id}">
+           ${prices.map((p, idx) => `<option value="${idx}">${p.label} - $${p.price}</option>`).join('')}
+         </select>`
+      : `<span style="font-size:0.8rem; color:#666;">${prices[0].label}</span>`;
 
-      document.getElementById('edit-order-modal').classList.add('active');
-    }
+    return `
+      <div class="item-card" id="card_${item.id}">
+        <div>
+          <div class="item-name">${item.name}</div>
+          <div class="item-price">${priceText}</div>
+        </div>
+        <div class="item-actions">
+          ${optionsHtml}
+          <button type="button" class="btn-add-cart" id="btn_add_${item.id}" onclick="addToCart('${item.id}')">
+            <i class="fa-solid fa-cart-plus"></i> Add
+          </button>
+        </div>
+      </div>
+    `;
+  }
 
-    function closeEditOrderModal() {
-      document.getElementById('edit-order-modal').classList.remove('active');
-    }
+  function toggleAccordion(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('collapsed');
+  }
 
-    function saveOrderModifications() {
-      if (!confirm("Save these changes to the order?")) return;
+  function addToCart(itemId) {
+    const item = catalog.find(i => i.id === itemId);
+    if (!item) return;
+    const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
 
-      const orderId = document.getElementById('edit-modal-order-id').value;
-      const settlementNo = document.getElementById('edit-settlement-no').value.trim() || 'N/A';
-      const restaurant = document.getElementById('edit-restaurant').value;
-      const handlingStaff = document.getElementById('edit-handling-staff').value.trim() || 'Unassigned';
-      const guestName = document.getElementById('edit-guest-name').value.trim();
-      const tel = document.getElementById('edit-tel').value.trim();
-      const pickupDate = document.getElementById('edit-pickup-date').value.trim();
-      const pickupTime = document.getElementById('edit-pickup-time').value.trim();
-      const wording = document.getElementById('edit-wording').value;
-      const remarks = document.getElementById('edit-remarks').value;
-      const lastUpdated = formatDateTime24(new Date());
+    const sizeSelect = document.getElementById(`select_size_${itemId}`);
+    const sizeIdx = sizeSelect ? parseInt(sizeSelect.value) || 0 : 0;
+    const selectedOption = prices[sizeIdx] || prices[0];
+    const cartKey = `${itemId}_${sizeIdx}`;
 
-      db.ref('cake_submissions/' + orderId).update({
-        settlementNo, restaurant, handlingStaff, guestName, tel, pickupDate, pickupTime, wording, remarks, lastUpdated
-      }, (error) => {
-        if (!error) {
-          alert("Order details updated successfully!");
-          closeEditOrderModal();
-        } else {
-          alert("Failed to update order. Please check your connection.");
-          console.error(error);
-        }
-      });
-    }
-
-    function downloadCurrentModalPdf() {
-      const orderId = document.getElementById('edit-modal-order-id').value;
-      const sub = submissions.find(s => String(s.id) === String(orderId));
-      if (!sub) return;
-
-      const tempSub = {
-        ...sub,
-        settlementNo: document.getElementById('edit-settlement-no').value.trim() || 'N/A',
-        restaurant: document.getElementById('edit-restaurant').value,
-        handlingStaff: document.getElementById('edit-handling-staff').value.trim() || 'Unassigned',
-        guestName: document.getElementById('edit-guest-name').value.trim(),
-        tel: document.getElementById('edit-tel').value.trim(),
-        pickupDate: document.getElementById('edit-pickup-date').value.trim(),
-        pickupTime: document.getElementById('edit-pickup-time').value.trim(),
-        wording: document.getElementById('edit-wording').value,
-        remarks: document.getElementById('edit-remarks').value
+    if (cart[cartKey]) {
+      cart[cartKey].qty += 1;
+    } else {
+      cart[cartKey] = {
+        cartKey: cartKey, itemId: itemId, name: item.name,
+        option: selectedOption.label, price: selectedOption.price, qty: 1
       };
-
-      downloadPdfByObject(tempSub);
     }
 
-    function downloadPdfByObject(sub) {
-      if (typeof html2pdf === 'undefined') {
-        alert("PDF library not loaded.");
-        return;
-      }
+    const btn = document.getElementById(`btn_add_${itemId}`);
+    if (btn) {
+      btn.classList.add('added-flash');
+      btn.innerHTML = `<i class="fa-solid fa-check"></i> Added`;
+      setTimeout(() => {
+        btn.classList.remove('added-flash');
+        btn.innerHTML = `<i class="fa-solid fa-cart-plus"></i> Add`;
+      }, 800);
+    }
 
-      let pdfContent = `
-        <div style="padding: 24px; font-family: sans-serif;">
-          <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
-          <p style="color: #666; font-size: 12px; margin-bottom: 12px;">Submitted: ${sub.dateSubmitted} | Processed by: ${sub.handlingStaff || 'Unassigned'}</p>
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Settlement No:</td><td>${sub.settlementNo || 'N/A'}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Restaurant:</td><td>${sub.restaurant || ''}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Handling Staff:</td><td>${sub.handlingStaff || ''}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Guest Name:</td><td>${sub.guestName}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td style="white-space: pre-wrap;">${sub.wording}</td></tr>
-            <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td style="white-space: pre-wrap;">${sub.remarks}</td></tr>
-          </table>
-          <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
-            <thead>
-              <tr style="background: #f4f8f5;"><th>Item</th><th>Option</th><th align="right">Price</th><th align="center">Qty</th><th align="right">Subtotal</th></tr>
-            </thead>
-            <tbody>
-      `;
-      if (sub.items) {
-        sub.items.forEach(i => {
-          pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
-        });
+    updateCartUI();
+  }
+
+  function updateCartQty(cartKey, delta) {
+    if (!cart[cartKey]) return;
+    cart[cartKey].qty += delta;
+    if (cart[cartKey].qty <= 0) delete cart[cartKey];
+    updateCartUI();
+  }
+
+  function removeFromCart(cartKey) {
+    if (!confirm("Remove this item from your cart?")) return;
+    delete cart[cartKey];
+    updateCartUI();
+  }
+
+  function updateCartUI() {
+    const cartItems = Object.values(cart);
+    let totalQty = 0, totalPrice = 0;
+
+    cartItems.forEach(item => {
+      totalQty += item.qty;
+      totalPrice += (item.price * item.qty);
+    });
+
+    const badge = document.getElementById('cart-badge-count');
+    const floatTotal = document.getElementById('cart-float-total');
+    const drawerTotal = document.getElementById('drawer-total-price');
+
+    if (badge) badge.innerText = totalQty;
+    if (floatTotal) floatTotal.innerText = `$${totalPrice}`;
+    if (drawerTotal) drawerTotal.innerText = `$${totalPrice}`;
+
+    catalog.forEach(item => {
+      const card = document.getElementById(`card_${item.id}`);
+      const hasItem = cartItems.some(ci => ci.itemId === item.id);
+      if (card) {
+        if (hasItem) card.classList.add('has-in-cart');
+        else card.classList.remove('has-in-cart');
       }
-      pdfContent += `
-            <tr style="font-weight: bold;"><td colspan="4" align="right">Total:</td><td align="right" style="color: #1b4332;">$${sub.totalAmount}</td></tr>
-            </tbody>
-          </table>
+    });
+
+    const drawerBody = document.getElementById('cart-drawer-body');
+    if (!drawerBody) return;
+
+    if (cartItems.length === 0) {
+      drawerBody.innerHTML = `
+        <div style="text-align: center; color: var(--text-muted); margin-top: 60px;">
+          <i class="fa-solid fa-basket-shopping" style="font-size: 3rem; margin-bottom: 12px; color: var(--border-color);"></i>
+          <p>Your cart is empty.</p>
         </div>
       `;
-
-      html2pdf().set({
-        margin: 0.5,
-        filename: `Cake_Order_${sub.id}_${(sub.guestName || '').replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-      }).from(pdfContent).save();
-    }
-
-    function clearSubmissions() {
-      if (!confirm("Are you sure you want to permanently delete ALL submitted orders from Firebase?\n\nThis action cannot be undone.")) return;
-
-      db.ref('cake_submissions').remove((error) => {
-        if (!error) {
-          alert("All submissions have been cleared.");
-        } else {
-          alert("Failed to clear submissions. Please check your connection.");
-          console.error(error);
-        }
-      });
-    }
-
-    function renderItems() {
-      const tbody = document.getElementById('items-tbody');
-      const badge = document.getElementById('catalog-count-badge');
-      if (!tbody) return;
-
-      tbody.innerHTML = '';
-      if (badge) badge.innerText = `${catalog.length} Items`;
-
-      catalog.forEach(item => {
-        const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
-        const priceStr = prices.map(p => `${p.label}: $${p.price}`).join(' | ');
-        tbody.innerHTML += `
-          <tr>
-            <td style="font-weight: 600;">${item.name}</td>
-            <td><span class="badge-cat">${item.cat}</span></td>
-            <td>${priceStr}</td>
-            <td>
-              <button type="button" class="btn btn-secondary" onclick="editItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Edit</button>
-              <button type="button" class="btn btn-danger" onclick="deleteItem('${item.id}')" style="padding: 4px 10px; font-size: 0.8rem;">Delete</button>
-            </td>
-          </tr>
+    } else {
+      drawerBody.innerHTML = '';
+      cartItems.forEach(item => {
+        drawerBody.innerHTML += `
+          <div class="cart-item-row">
+            <div class="cart-item-details">
+              <div class="cart-item-title">${item.name}</div>
+              <div class="cart-item-option">${item.option} ($${item.price})</div>
+              <div class="cart-item-price">$${item.price * item.qty}</div>
+            </div>
+            <div class="cart-qty-picker">
+              <button type="button" class="cart-qty-btn" onclick="updateCartQty('${item.cartKey}', -1)">-</button>
+              <div class="cart-qty-num">${item.qty}</div>
+              <button type="button" class="cart-qty-btn" onclick="updateCartQty('${item.cartKey}', 1)">+</button>
+            </div>
+            <button type="button" class="cart-remove-btn" onclick="removeFromCart('${item.cartKey}')"><i class="fa-solid fa-trash-can"></i></button>
+          </div>
         `;
       });
     }
+  }
 
-    function handleSaveItem() {
-      const name = document.getElementById('item-name').value.trim();
-      if (!name) {
-        alert("Please enter an item name.");
+  function openCartDrawer() {
+    document.getElementById('cart-overlay').classList.add('active');
+    document.getElementById('cart-drawer').classList.add('active');
+  }
+
+  function closeCartDrawer() {
+    document.getElementById('cart-overlay').classList.remove('active');
+    document.getElementById('cart-drawer').classList.remove('active');
+  }
+
+  function formatDateDisplay(yyyyMmDd) {
+    if (!yyyyMmDd) return '';
+    const parts = yyyyMmDd.split('-');
+    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
+  }
+
+  // ========== FIXED ORDER ID GENERATION ==========
+  function generateNextOrderId(restaurantName) {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const datePrefix = `${yyyy}${mm}${dd}`;
+
+    // Sanitize restaurant name for Firebase key (no spaces / special characters)
+    const safeRestaurant = restaurantName
+      .replace(/&/g, 'and')
+      .replace(/\s+/g, '')
+      .replace(/[^a-zA-Z0-9]/g, '');
+
+    const todayOrders = submissionsList.filter(s => {
+      const id = String(s.id || '');
+      return id.startsWith(datePrefix) && id.includes(safeRestaurant);
+    });
+
+    let maxSeq = 0;
+    todayOrders.forEach(s => {
+      const parts = String(s.id).split('-');
+      if (parts.length >= 2) {
+        const seqNum = parseInt(parts[1], 10);
+        if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
+      }
+    });
+
+    const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
+    return `${datePrefix}-${nextSeqStr}-${safeRestaurant}`;
+  }
+
+  // ========== FIXED SUBMIT FUNCTION ==========
+  function handleCustomerSubmit() {
+    const restaurant = document.getElementById('restaurant').value;
+    const handlingStaff = document.getElementById('handlingStaff').value.trim();
+    const settlementNo = document.getElementById('settlementNo').value.trim() || 'N/A';
+    const guestName = document.getElementById('guestName').value.trim();
+    const tel = document.getElementById('tel').value.trim();
+    const pickupDateVal = document.getElementById('pickupDate').value;
+    const pickupTime = document.getElementById('pickupTime').value;
+
+    if (!restaurant || !handlingStaff || !guestName || !tel || !pickupDateVal || !pickupTime) {
+      alert("Please complete all required fields:\n• Restaurant\n• Handling Staff\n• Guest Name\n• Contact Tel\n• Pickup Date\n• Pickup Time");
+      return;
+    }
+
+    const items = Object.values(cart);
+    if (items.length === 0) {
+      alert("Your cart is empty!\nPlease add at least one item before submitting.");
+      openCartDrawer();
+      return;
+    }
+
+    const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    let itemList = items.map(i => 
+      `• ${i.name} (${i.option}) × ${i.qty} = $${i.price * i.qty}`
+    ).join('\n');
+
+    const confirmMsg = 
+`Confirm your order?
+
+Restaurant: ${restaurant}
+Handling Staff: ${handlingStaff}
+Settlement No.: ${settlementNo}
+Guest: ${guestName}
+Pickup: ${formatDateDisplay(pickupDateVal)} at ${pickupTime}
+
+Items:
+${itemList}
+
+Total: $${total}`;
+
+    if (!confirm(confirmMsg)) return;
+
+    const wording = document.getElementById('wording').value || 'None';
+    const remarks = document.getElementById('remarks').value || 'None';
+    const pickupDate = formatDateDisplay(pickupDateVal);
+
+    const orderId = generateNextOrderId(restaurant);
+    const totalAmount = total;
+    const formattedTimestamp = formatDateTime24(new Date());
+
+    const submission = {
+      id: orderId,
+      settlementNo: settlementNo,
+      restaurant: restaurant,
+      handlingStaff: handlingStaff,
+      guestName, tel, pickupDate, pickupTime, wording, remarks,
+      items: items.map(i => ({
+        name: i.name,
+        option: i.option,
+        price: i.price,
+        qty: i.qty,
+        subtotal: i.price * i.qty
+      })),
+      totalAmount,
+      dateSubmitted: formattedTimestamp,
+      lastUpdated: formattedTimestamp
+    };
+
+    console.log("Submitting order:", orderId, submission);
+
+    db.ref('cake_submissions/' + orderId).set(submission, (error) => {
+      if (error) {
+        console.error("Firebase write error:", error);
+        alert(
+          "❌ Order submission failed!\n\n" +
+          "Most common reasons:\n" +
+          "1. Firebase config still has YOUR_API_KEY (placeholder)\n" +
+          "2. Database rules do not allow writing\n" +
+          "3. No internet connection\n\n" +
+          "Error: " + (error.message || error)
+        );
         return;
       }
 
-      const editId = document.getElementById('edit-item-id').value;
-      const isEdit = !!editId;
-      const actionText = isEdit ? "update this menu item" : "add this new menu item";
+      console.log("✅ Order saved successfully:", orderId);
 
-      if (!confirm(`Are you sure you want to ${actionText}?`)) return;
-
-      const cat = document.getElementById('item-category').value;
-      const stdPrice = parseFloat(document.getElementById('item-price-standard').value) || 0;
-      const lgPriceInput = document.getElementById('item-price-large').value;
-
-      const prices = [{ label: "Slice / Standard", price: stdPrice }];
-      if (lgPriceInput !== "") {
-        prices.push({ label: "Whole Cake", price: parseFloat(lgPriceInput) || 0 });
-      }
-
-      if (editId) {
-        const item = catalog.find(i => i.id === editId);
-        if (item) { item.name = name; item.cat = cat; item.prices = prices; }
-      } else {
-        catalog.push({ id: "item_" + Date.now(), name, cat, prices });
-      }
-
-      db.ref('cake_catalog').set(catalog, (error) => {
-        if (!error) {
-          alert(isEdit ? "Menu item updated successfully!" : "New menu item added successfully!");
-          resetItemForm();
-        } else {
-          alert("Failed to save menu item. Please check your connection.");
-          console.error(error);
-        }
-      });
-    }
-
-    function editItem(id) {
-      const item = catalog.find(i => i.id === id);
-      if (!item) return;
-
-      const prices = Array.isArray(item.prices) ? item.prices : Object.values(item.prices || {});
-
-      document.getElementById('edit-item-id').value = item.id;
-      document.getElementById('item-name').value = item.name;
-      document.getElementById('item-category').value = item.cat;
-      document.getElementById('item-price-standard').value = prices[0] ? prices[0].price : 0;
-      document.getElementById('item-price-large').value = prices[1] ? prices[1].price : "";
-      
-      document.getElementById('form-item-title').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Edit Menu Item: ${item.name}`;
-      document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Item';
-      window.scrollTo(0, 0);
-    }
-
-    function deleteItem(id) {
-      const item = catalog.find(i => i.id === id);
-      const name = item ? item.name : "this item";
-
-      if (!confirm(`Are you sure you want to permanently delete "${name}" from the catalog?\n\nThis cannot be undone.`)) return;
-
-      catalog = catalog.filter(i => i.id !== id);
-      db.ref('cake_catalog').set(catalog, (error) => {
-        if (!error) {
-          alert("Item deleted successfully.");
-        } else {
-          alert("Failed to delete item. Please check your connection.");
-          console.error(error);
-        }
-      });
-    }
-
-    function resetItemForm() {
-      document.getElementById('item-form').reset();
-      document.getElementById('edit-item-id').value = '';
-      document.getElementById('form-item-title').innerHTML = '<i class="fa-solid fa-plus-circle"></i> Add New Menu Item';
-      document.getElementById('btn-save-item').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Item';
-    }
-
-    function renderPickupSettings() {
-      document.getElementById('pickup-lead').value = pickupSettings.leadDays || 1;
-      const container = document.getElementById('time-slot-container');
-      if (!container) return;
-
-      container.innerHTML = '';
-      const enabled = pickupSettings.enabledSlots || ALL_15MIN_SLOTS;
-      ALL_15MIN_SLOTS.forEach(slot => {
-        const checked = enabled.includes(slot) ? 'checked' : '';
-        container.innerHTML += `
-          <label class="time-slot-item">
-            <input type="checkbox" value="${slot}" ${checked}>
-            <span>${slot}</span>
-          </label>
-        `;
-      });
-    }
-
-    function toggleAllSlots(select) {
-      document.querySelectorAll('#time-slot-container input[type="checkbox"]').forEach(cb => {
-        cb.checked = select;
-      });
-    }
-
-    function handleSavePickup() {
-      if (!confirm("Save the current pickup settings (lead days + time slots)?")) return;
-
-      const leadDays = parseInt(document.getElementById('pickup-lead').value) || 0;
-      const checkedBoxes = document.querySelectorAll('#time-slot-container input[type="checkbox"]:checked');
-      const enabledSlots = Array.from(checkedBoxes).map(cb => cb.value);
-
-      pickupSettings = { leadDays, enabledSlots };
-
-      db.ref('cake_pickup').set(pickupSettings, (err) => {
-        if (!err) {
-          alert("Pickup settings saved successfully!");
-        } else {
-          alert("Failed to save pickup settings. Please check your connection.");
-          console.error(err);
-        }
-      });
-    }
-
-    function reloadPreviewFrame() {
-      const frame = document.getElementById('preview-iframe');
-      if (frame) frame.src = frame.src;
-    }
-
-    // ========== FIXED SHARE / QR CODE FUNCTION ==========
-    function renderQr() {
-      const shareInput = document.getElementById('share-url');
-      const noteEl = document.getElementById('share-note');
-      
-      let customerFormUrl = '';
-      
       try {
-        // Best way: resolve relative to current page
-        customerFormUrl = new URL('index.html', window.location.href).href;
-      } catch (e) {
-        // Fallback
-        const origin = window.location.origin || '';
-        const path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-        customerFormUrl = origin + path + 'index.html';
+        generatePdf(submission);
+      } catch (pdfErr) {
+        console.warn("PDF generation error:", pdfErr);
       }
 
-      // Handle file:// protocol (local testing)
-      if (window.location.protocol === 'file:') {
-        customerFormUrl = 'Please upload both files to a web server to get a public link';
-        if (noteEl) {
-          noteEl.innerHTML = '⚠️ You are opening the file locally (file://). Upload <code>index.html</code> and <code>admin.html</code> to a hosting service (GitHub Pages, Netlify, Firebase Hosting, etc.) to get a real shareable link and working QR code.';
-        }
-      } else {
-        if (noteEl) noteEl.innerHTML = '';
-      }
+      // Show confirmation page
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('cart-float-bar').style.display = 'none';
+      document.getElementById('confirmation-screen').style.display = 'block';
+      window.scrollTo(0, 0);
+    });
+  }
 
-      if (shareInput) {
-        shareInput.value = customerFormUrl;
-      }
+  function generatePdf(sub) {
+    if (typeof html2pdf === 'undefined') return;
 
-      const qrContainer = document.getElementById('qrcode');
-      if (qrContainer && typeof QRCode !== 'undefined') {
-        qrContainer.innerHTML = '';
-        
-        // Only generate QR if we have a real http/https URL
-        if (customerFormUrl.startsWith('http')) {
-          new QRCode(qrContainer, {
-            text: customerFormUrl,
-            width: 180,
-            height: 180,
-            colorDark: "#1b4332",
-            colorLight: "#ffffff"
-          });
-        } else {
-          qrContainer.innerHTML = '<p style="color:#991b1b; font-size:0.9rem;">QR code will appear after the site is hosted online.</p>';
-        }
-      }
-    }
+    let pdfContent = `
+      <div style="padding: 24px; font-family: sans-serif;">
+        <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
+        <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Created: ${sub.dateSubmitted}</p>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+          <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Settlement No:</td><td>${sub.settlementNo || 'N/A'}</td></tr>
+          <tr><td style="padding: 6px; font-weight: bold;">Restaurant:</td><td>${sub.restaurant || ''}</td></tr>
+          <tr><td style="padding: 6px; font-weight: bold;">Handling Staff:</td><td>${sub.handlingStaff || ''}</td></tr>
+          <tr><td style="padding: 6px; font-weight: bold;">Guest Name:</td><td>${sub.guestName}</td></tr>
+          <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
+          <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
+          <tr><td style="padding: 6px; font-weight: bold;">Wording:</td><td style="white-space: pre-wrap;">${sub.wording}</td></tr>
+          <tr><td style="padding: 6px; font-weight: bold;">Remarks:</td><td style="white-space: pre-wrap;">${sub.remarks}</td></tr>
+        </table>
+        <h3 style="color: #1b4332; border-bottom: 2px solid #d8f3dc; padding-bottom: 4px; margin-bottom: 12px;">Order Summary</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;" border="1" cellpadding="8">
+          <thead>
+            <tr style="background: #f4f8f5;"><th>Item</th><th>Option</th><th align="right">Price</th><th align="center">Qty</th><th align="right">Subtotal</th></tr>
+          </thead>
+          <tbody>
+    `;
+    sub.items.forEach(i => {
+      pdfContent += `<tr><td>${i.name}</td><td>${i.option}</td><td align="right">$${i.price}</td><td align="center">${i.qty}</td><td align="right">$${i.subtotal}</td></tr>`;
+    });
+    pdfContent += `
+          <tr style="font-weight: bold;"><td colspan="4" align="right">Total:</td><td align="right" style="color: #1b4332;">$${sub.totalAmount}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    `;
 
-    function copyUrl() {
-      const shareInput = document.getElementById('share-url');
-      if (shareInput && shareInput.value.startsWith('http')) {
-        shareInput.select();
-        document.execCommand('copy');
-        alert("Customer form link copied to clipboard!");
-      } else {
-        alert("No valid public link available yet.\nPlease host the files on a web server first.");
-      }
-    }
+    html2pdf().set({
+      margin: 0.5,
+      filename: `Cake_Order_${sub.id}_${sub.guestName.replace(/\s+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    }).from(pdfContent).save();
+  }
 
-    // Initial render
-    renderItems();
-  </script>
+  function resetFormView() {
+    document.getElementById('cake-order-form').reset();
+    cart = {};
+    updateCartUI();
+    document.getElementById('confirmation-screen').style.display = 'none';
+    document.getElementById('form-container').style.display = 'block';
+    document.getElementById('cart-float-bar').style.display = 'flex';
+    initPickupDateAndTime();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderFormCatalog();
+    initPickupDateAndTime();
+  });
+</script>
 </body>
 </html>
