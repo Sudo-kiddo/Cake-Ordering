@@ -153,6 +153,30 @@
           <span><i class="fa-solid fa-user-tag"></i> Customer & Order Details</span>
         </div>
         <div class="form-grid">
+          <!-- NEW: Restaurant -->
+          <div class="form-group">
+            <label for="restaurant">Restaurant *</label>
+            <select id="restaurant" required>
+              <option value="">-- Select Restaurant --</option>
+              <option value="GREEN">GREEN</option>
+              <option value="A&B">A&B</option>
+              <option value="Gourmet Shop">Gourmet Shop</option>
+              <option value="The Market">The Market</option>
+            </select>
+          </div>
+
+          <!-- NEW: Handling Staff -->
+          <div class="form-group">
+            <label for="handlingStaff">Handling Staff *</label>
+            <input type="text" id="handlingStaff" required placeholder="e.g. Chef Mary">
+          </div>
+
+          <!-- NEW: Settlement No. -->
+          <div class="form-group">
+            <label for="settlementNo">Settlement No.</label>
+            <input type="text" id="settlementNo" placeholder="e.g. SET-88219">
+          </div>
+
           <div class="form-group">
             <label for="guestName">Guest Name *</label>
             <input type="text" id="guestName" required placeholder="e.g. Edward">
@@ -582,33 +606,45 @@
       return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
     }
 
-    function generateNextOrderId() {
+    // NEW Order ID format: 20261020-001-GREEN
+    function generateNextOrderId(restaurantName) {
       const now = new Date();
       const yyyy = now.getFullYear();
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const dd = String(now.getDate()).padStart(2, '0');
       const datePrefix = `${yyyy}${mm}${dd}`;
 
-      const todayOrders = submissionsList.filter(s => String(s.id).startsWith(datePrefix));
+      // Filter today's orders for the same restaurant
+      const todayOrders = submissionsList.filter(s => {
+        const id = String(s.id || '');
+        return id.startsWith(datePrefix) && id.includes(restaurantName);
+      });
+
       let maxSeq = 0;
       todayOrders.forEach(s => {
-        const seqStr = String(s.id).substring(8);
-        const seqNum = parseInt(seqStr, 10);
-        if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
+        // Expected format: 20261020-001-GREEN
+        const parts = String(s.id).split('-');
+        if (parts.length >= 2) {
+          const seqNum = parseInt(parts[1], 10);
+          if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
+        }
       });
 
       const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
-      return `${datePrefix}${nextSeqStr}`;
+      return `${datePrefix}-${nextSeqStr}-${restaurantName}`;
     }
 
     function handleCustomerSubmit() {
+      const restaurant = document.getElementById('restaurant').value;
+      const handlingStaff = document.getElementById('handlingStaff').value.trim();
+      const settlementNo = document.getElementById('settlementNo').value.trim() || 'N/A';
       const guestName = document.getElementById('guestName').value.trim();
       const tel = document.getElementById('tel').value.trim();
       const pickupDateVal = document.getElementById('pickupDate').value;
       const pickupTime = document.getElementById('pickupTime').value;
 
-      if (!guestName || !tel || !pickupDateVal || !pickupTime) {
-        alert("Please complete all required fields:\n• Guest Name\n• Contact Tel\n• Pickup Date\n• Pickup Time");
+      if (!restaurant || !handlingStaff || !guestName || !tel || !pickupDateVal || !pickupTime) {
+        alert("Please complete all required fields:\n• Restaurant\n• Handling Staff\n• Guest Name\n• Contact Tel\n• Pickup Date\n• Pickup Time");
         return;
       }
 
@@ -619,7 +655,7 @@
         return;
       }
 
-      // Confirmation dialog with item list
+      // Confirmation dialog
       const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
       let itemList = items.map(i => 
         `• ${i.name} (${i.option}) × ${i.qty} = $${i.price * i.qty}`
@@ -628,6 +664,9 @@
       const confirmMsg = 
 `Confirm your order?
 
+Restaurant: ${restaurant}
+Handling Staff: ${handlingStaff}
+Settlement No.: ${settlementNo}
 Guest: ${guestName}
 Pickup: ${formatDateDisplay(pickupDateVal)} at ${pickupTime}
 
@@ -642,18 +681,19 @@ Total: $${total}`;
       const remarks = document.getElementById('remarks').value || 'None';
       const pickupDate = formatDateDisplay(pickupDateVal);
 
-      const orderId = generateNextOrderId();
+      const orderId = generateNextOrderId(restaurant);
       const totalAmount = total;
       const formattedTimestamp = formatDateTime24(new Date());
 
       const submission = {
         id: orderId,
-        refNo: "N/A",
+        settlementNo: settlementNo,
+        restaurant: restaurant,
+        handlingStaff: handlingStaff,
         guestName, tel, pickupDate, pickupTime, wording, remarks,
         items: items.map(i => ({ name: i.name, option: i.option, price: i.price, qty: i.qty, subtotal: i.price * i.qty })),
         totalAmount,
         dateSubmitted: formattedTimestamp,
-        handlingStaff: "Unassigned",
         lastUpdated: formattedTimestamp
       };
 
@@ -688,7 +728,9 @@ Total: $${total}`;
           <h2 style="color: #1b4332; margin-bottom: 8px;">Cake Ordering Form - #${sub.id}</h2>
           <p style="color: #666; font-size: 12px; margin-bottom: 20px;">Created: ${sub.dateSubmitted}</p>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
-            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Ref No:</td><td>${sub.refNo || 'N/A'}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold; width: 30%;">Settlement No:</td><td>${sub.settlementNo || 'N/A'}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Restaurant:</td><td>${sub.restaurant || ''}</td></tr>
+            <tr><td style="padding: 6px; font-weight: bold;">Handling Staff:</td><td>${sub.handlingStaff || ''}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Guest Name:</td><td>${sub.guestName}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Tel:</td><td>${sub.tel}</td></tr>
             <tr><td style="padding: 6px; font-weight: bold;">Pickup Date:</td><td>${sub.pickupDate} at ${sub.pickupTime}</td></tr>
