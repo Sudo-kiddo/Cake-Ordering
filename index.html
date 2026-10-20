@@ -607,33 +607,41 @@
       return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : yyyyMmDd;
     }
 
-    // NEW Order ID format: 20261020-001-GREEN
-    function generateNextOrderId(restaurantName) {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const datePrefix = `${yyyy}${mm}${dd}`;
+    // Order ID format: 20261020-001-GREEN
+// Sequence continues across all restaurants for the same day
+function generateNextOrderId(restaurantName) {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const datePrefix = `${yyyy}${mm}${dd}`;
 
-      // Filter today's orders for the same restaurant
-      const todayOrders = submissionsList.filter(s => {
-        const id = String(s.id || '');
-        return id.startsWith(datePrefix) && id.includes(restaurantName);
-      });
+  // Sanitize restaurant name for the ID
+  const safeRestaurant = restaurantName
+    .replace(/&/g, 'and')
+    .replace(/\s+/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '');
 
-      let maxSeq = 0;
-      todayOrders.forEach(s => {
-        // Expected format: 20261020-001-GREEN
-        const parts = String(s.id).split('-');
-        if (parts.length >= 2) {
-          const seqNum = parseInt(parts[1], 10);
-          if (!isNaN(seqNum) && seqNum > maxSeq) maxSeq = seqNum;
-        }
-      });
+  // Look at ALL orders of today (regardless of restaurant)
+  const todayOrders = submissionsList.filter(s => {
+    const id = String(s.id || '');
+    return id.startsWith(datePrefix);
+  });
 
-      const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
-      return `${datePrefix}-${nextSeqStr}-${restaurantName}`;
+  let maxSeq = 0;
+  todayOrders.forEach(s => {
+    const parts = String(s.id).split('-');
+    if (parts.length >= 2) {
+      const seqNum = parseInt(parts[1], 10);
+      if (!isNaN(seqNum) && seqNum > maxSeq) {
+        maxSeq = seqNum;
+      }
     }
+  });
+
+  const nextSeqStr = String(maxSeq + 1).padStart(3, '0');
+  return `${datePrefix}-${nextSeqStr}-${safeRestaurant}`;
+}
 
     function handleCustomerSubmit() {
       const restaurant = document.getElementById('restaurant').value;
